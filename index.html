@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Catering Jogja - A Taste of Daily Catering Jogja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root {
+  --cream:#FBF5E6;--cream-dark:#F2E8D0;--amber:#C8833A;--amber-light:#E8A85A;
+  --amber-pale:#FDF0DC;--espresso:#1E1208;--brown:#3D2010;--brown-mid:#6B3A1F;
+  --sage:#2D4A2D;--sage-light:#4A7A4A;--sage-pale:#EDF2EB;--white:#FFFFFF;
+  --text:#2C1A0E;--text-muted:#7A6050;
+  --shadow:0 4px 24px rgba(30,18,8,.10);--shadow-lg:0 12px 48px rgba(30,18,8,.15);
+  --radius:16px;--transition:.35s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);line-height:1.6;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+ul{list-style:none}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;line-height:1.15}
+
+/* ── NAVBAR ── */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:70px;background:rgba(251,245,230,.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(200,131,58,.15);transition:box-shadow var(--transition)}
+.navbar.scrolled{box-shadow:var(--shadow)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo .logo-icon{width:36px;height:36px;background:var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+.nav-logo span{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;color:var(--espresso)}
+.nav-logo span em{font-style:italic;color:var(--amber)}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-links a{padding:6px 14px;border-radius:100px;font-size:.875rem;font-weight:500;color:var(--brown-mid);transition:all var(--transition)}
+.nav-links a:hover,.nav-links a.active{background:var(--amber);color:var(--white)}
+.nav-wa{display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--sage);color:var(--white)!important;border-radius:100px;font-size:.875rem;font-weight:600;transition:all var(--transition)}
+.nav-wa:hover{background:var(--sage-light);transform:translateY(-1px)}
+.nav-wa svg{width:16px;height:16px}
+.hamburger{display:none;flex-direction:column;gap:5px;padding:8px;background:none;border:none;cursor:pointer}
+.hamburger span{display:block;width:24px;height:2px;background:var(--espresso);border-radius:2px;transition:all var(--transition)}
+.mobile-menu{display:none;position:fixed;inset:70px 0 0;background:var(--cream);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:var(--brown);padding:4px 0}
+.mobile-menu a.active{color:var(--amber)}
+.mobile-menu .nav-wa{display:none}
+
+/* ── PAGE ── */
+.page{display:none;min-height:100vh;padding-top:70px}
+.page.active{display:block}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── SECTION ── */
+.section{padding:80px 5%}
+.section-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--amber-pale);border:1px solid rgba(200,131,58,.3);border-radius:100px;font-size:.78rem;font-weight:600;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:700;color:var(--espresso);margin-bottom:12px}
+.section-subtitle{font-size:1.05rem;color:var(--text-muted);max-width:520px;margin-bottom:48px}
+.center{text-align:center}
+.center .section-subtitle{margin:0 auto 48px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:100px;font-weight:600;font-size:.95rem;transition:all var(--transition)}
+.btn-primary{background:var(--amber);color:var(--white)}
+.btn-primary:hover{background:var(--amber-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,131,58,.35)}
+.btn-outline{background:transparent;border:2px solid var(--amber);color:var(--amber)}
+.btn-outline:hover{background:var(--amber);color:var(--white);transform:translateY(-2px)}
+.btn-wa{background:#25D366;color:var(--white)}
+.btn-wa:hover{background:#20C05C;transform:translateY(-2px)}
+.btn-wa svg{width:20px;height:20px}
+.btn-white{background:var(--white);color:var(--amber)}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.2)}
+
+/* Location button group */
+.location-btn-group{display:flex;gap:8px;margin-top:6px}
+.btn-location{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  background:var(--amber-pale);
+  border:1px solid var(--amber);
+  color:var(--amber);
+  font-size:13px;
+  font-weight:600;
+  transition:all .2s ease;
+}
+.btn-location:hover{background:var(--amber);color:white}
+.btn-location.active{background:#25D366;border-color:#25D366;color:white}
+.btn-remove-location{
+  padding:10px 14px;
+  border-radius:10px;
+  background:#fee2e2;
+  border:1px solid #f87171;
+  color:#dc2626;
+  font-size:13px;
+  font-weight:600;
+  transition:all .2s ease;
+  display:none;
+  white-space:nowrap;
+}
+.btn-remove-location:hover{background:#dc2626;color:white}
+.btn-remove-location.show{display:block}
+
+/* ── MAP MODAL ── */
+.map-modal-overlay{display:none;position:fixed;inset:0;z-index:3500;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px}
+.map-modal-overlay.open{display:flex}
+.map-modal-box{background:var(--white);border-radius:20px;overflow:hidden;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;animation:fadeUp .3s ease;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.map-modal-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--cream-dark);background:var(--espresso);color:var(--white);flex-shrink:0}
+.map-modal-header h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--white)}
+.map-modal-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:white;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.map-modal-close:hover{background:rgba(255,255,255,.3)}
+.map-search-bar{padding:12px 16px;border-bottom:1px solid var(--cream-dark);flex-shrink:0;display:flex;gap:8px;overflow:visible}
+.map-search-input{flex:1;padding:9px 13px;border:2px solid var(--cream-dark);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:border-color .2s}
+.map-search-input:focus{border-color:var(--amber)}
+.map-search-btn{padding:9px 16px;background:var(--amber);color:white;border:none;border-radius:10px;font-weight:600;font-size:.82rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.map-search-btn:hover{background:var(--amber-light)}
+.map-search-results{position:absolute;top:100%;left:0;right:0;background:white;border-radius:10px;box-shadow:var(--shadow-lg);z-index:3600;max-height:200px;overflow-y:auto;display:none;margin-top:4px}
+.map-search-results.show{display:block}
+.map-search-result-item{padding:10px 14px;cursor:pointer;font-size:.82rem;border-bottom:1px solid var(--cream-dark);transition:background .15s;line-height:1.4}
+.map-search-result-item:hover{background:var(--amber-pale)}
+.map-search-result-item:last-child{border-bottom:none}
+.map-search-wrapper{position:relative;flex:1;z-index:3500}
+#mapContainer{flex:1;min-height:320px}
+.map-modal-footer{padding:12px 16px;border-top:1px solid var(--cream-dark);background:var(--white);flex-shrink:0}
+.map-selected-addr{font-size:.82rem;color:var(--text-muted);margin-bottom:10px;min-height:16px;display:flex;align-items:flex-start;gap:6px}
+.map-selected-addr .addr-pin{color:var(--amber);flex-shrink:0;font-size:.95rem}
+.map-modal-actions{display:flex;gap:10px}
+.map-use-btn{flex:1;padding:11px;background:#25D366;color:white;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.map-use-btn:hover{background:#20C05C}
+.map-cancel-btn{padding:11px 18px;background:var(--cream-dark);color:var(--espresso);border:none;border-radius:10px;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.map-cancel-btn:hover{background:#e0d0bc}
+
+/* ─────────────────────────────────────────
+   HOME
+───────────────────────────────────────── */
+.hero{min-height:calc(100vh - 70px);display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:40px;padding:60px 5%;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 70% 50%,rgba(200,131,58,.08) 0%,transparent 70%);pointer-events:none}
+.hero-content{animation:fadeUp .8s ease both}
+.hero-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.hero-eyebrow span{font-size:.82rem;font-weight:600;color:var(--amber);letter-spacing:.1em;text-transform:uppercase}
+.hero-h1{font-size:clamp(2.8rem,5vw,4.2rem);font-weight:700;color:var(--espresso);line-height:1.1;margin-bottom:20px}
+.hero-h1 em{font-style:italic;color:var(--amber)}
+.hero-desc{font-size:1.05rem;color:var(--text-muted);max-width:460px;margin-bottom:36px;line-height:1.7}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
+.hero-stat .num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--espresso)}
+.hero-stat .label{font-size:.8rem;color:var(--text-muted);font-weight:500}
+.hero-visual{position:relative;animation:fadeIn 1s ease .3s both}
+.hero-card-main{width:100%;aspect-ratio:4/5;background:linear-gradient(145deg,#2D4A2D 0%,#1a2e1a 40%,#0d1a0d 100%);border-radius:32px;overflow:hidden;position:relative;box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center}
+.hero-card-main .food-grid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;padding:3px}
+.food-cell{display:flex;align-items:center;justify-content:center;font-size:3rem;border-radius:4px;background:rgba(255,255,255,.06);animation:floatY 3s ease-in-out infinite}
+.food-cell:nth-child(2){animation-delay:.5s}
+.food-cell:nth-child(3){animation-delay:1s}
+.food-cell:nth-child(4){animation-delay:1.5s}
+.hero-badge{position:absolute;bottom:-16px;left:-16px;background:var(--white);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:12px}
+.hero-badge .badge-icon{font-size:2rem}
+.hero-badge .badge-text strong{display:block;font-size:.95rem;font-family:'Cormorant Garamond',serif;font-weight:700;color:var(--espresso)}
+.hero-badge .badge-text span{font-size:.75rem;color:var(--text-muted)}
+.hero-floating{position:absolute;top:-16px;right:-16px;background:var(--amber);color:var(--white);border-radius:var(--radius);padding:14px 18px;text-align:center;box-shadow:var(--shadow);animation:floatY 4s ease-in-out infinite}
+.hero-floating .float-num{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700}
+.hero-floating .float-label{font-size:.72rem;opacity:.85}
+
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:48px}
+.service-card{background:var(--espresso);border-radius:var(--radius);padding:32px;color:var(--white);position:relative;overflow:hidden;transition:all var(--transition)}
+.service-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.service-card::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:rgba(200,131,58,.15);border-radius:50%}
+.service-card .s-label{font-size:.75rem;font-weight:600;color:var(--amber-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.service-card h3{font-size:1.5rem;color:var(--white);margin-bottom:8px}
+.service-card p{font-size:.875rem;color:rgba(255,255,255,.6)}
+.service-card .s-time{margin-top:16px;display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--amber-light);font-weight:600}
+
+/* AREA PENGIRIMAN */
+.layanan-section{background:var(--espresso);border-radius:32px;margin:0 5% 80px;padding:60px 5%}
+.layanan-section .section-label{background:rgba(200,131,58,.2);border-color:rgba(200,131,58,.4);color:var(--amber-light)}
+.layanan-section .section-title{color:var(--white)}
+.layanan-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.layanan-col h4{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--amber-light);margin-bottom:16px;font-weight:600}
+.layanan-list{display:flex;flex-direction:column;gap:10px}
+.layanan-item{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(255,255,255,.06);border-radius:10px;font-size:.875rem;color:rgba(255,255,255,.8)}
+.layanan-num{width:24px;height:24px;background:var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--white);flex-shrink:0}
+
+/* SYARAT */
+.syarat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.syarat-card{background:var(--white);border-radius:var(--radius);padding:28px;border:1px solid var(--cream-dark);transition:all var(--transition)}
+.syarat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.syarat-icon{font-size:2.5rem;margin-bottom:16px}
+.syarat-card h3{font-size:1.05rem;color:var(--espresso);margin-bottom:8px}
+.syarat-card p{font-size:.875rem;color:var(--text-muted);line-height:1.6}
+
+/* KEMASAN */
+.kemasan-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}
+.kemasan-card{background:var(--white);border-radius:var(--radius);padding:36px;border:2px solid var(--cream-dark);transition:all var(--transition);text-align:center}
+.kemasan-card.featured{border-color:var(--amber);box-shadow:var(--shadow-lg)}
+.kemasan-card:hover{transform:translateY(-4px)}
+.kemasan-icon{font-size:4rem;margin-bottom:20px}
+.kemasan-card h3{font-size:1.4rem;color:var(--espresso);margin-bottom:12px}
+.kemasan-card p{font-size:.875rem;color:var(--text-muted);line-height:1.7}
+
+/* HOW */
+.how-section{background:var(--espresso);border-radius:32px;margin:0 5% 80px;padding:80px 5%}
+.how-section .section-label{background:rgba(200,131,58,.2);border-color:rgba(200,131,58,.4);color:var(--amber-light)}
+.how-section .section-title{color:var(--white)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.step-card{display:flex;flex-direction:column;align-items:center;text-align:center}
+.step-num{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;margin-bottom:20px}
+.step-num.s1{background:var(--amber);color:var(--white)}
+.step-num.s2{background:var(--white);color:var(--espresso)}
+.step-num.s3{background:#25D366;color:var(--white)}
+.step-card h3{font-size:1.05rem;font-weight:600;color:var(--white);margin-bottom:8px}
+.step-card p{font-size:.85rem;color:rgba(255,255,255,.55)}
+
+/* CTA */
+.cta-section{margin:0 5% 80px;background:linear-gradient(135deg,var(--amber) 0%,var(--amber-light) 50%,#C87040 100%);border-radius:32px;padding:80px 5%;display:flex;align-items:center;justify-content:space-between;gap:40px}
+.cta-content h2{font-size:clamp(2rem,3.5vw,2.8rem);color:var(--white);margin-bottom:12px}
+.cta-content p{color:rgba(255,255,255,.85);max-width:400px;font-size:1.05rem}
+.cta-actions{display:flex;flex-direction:column;gap:12px;align-items:center;flex-shrink:0}
+
+/* GALLERY */
+.gallery-section{padding:0 5% 80px}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.gallery-card{border-radius:var(--radius);overflow:hidden;cursor:pointer;position:relative;transition:all var(--transition);box-shadow:var(--shadow)}
+.gallery-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:var(--shadow-lg)}
+.gallery-card:hover .gallery-overlay{opacity:1}
+.gallery-card:hover .gallery-floatemoji{opacity:1;transform:scale(1)}
+.gallery-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative}
+.gallery-overlay{position:absolute;inset:0;background:rgba(30,18,8,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:all var(--transition);flex-direction:column;gap:8px}
+.gallery-overlay .view-btn{background:var(--white);color:var(--espresso);padding:8px 20px;border-radius:100px;font-size:.82rem;font-weight:700}
+.gallery-floatemoji{position:absolute;font-size:1.4rem;opacity:0;transform:scale(0);transition:all .3s ease;pointer-events:none}
+.gallery-floatemoji.f1{top:10px;left:12px;transition-delay:.05s}
+.gallery-floatemoji.f2{top:10px;right:12px;transition-delay:.1s}
+.gallery-floatemoji.f3{bottom:52px;right:12px;transition-delay:.15s}
+.gallery-info{background:var(--white);padding:14px 18px}
+.gallery-info .g-cat{font-size:.7rem;font-weight:700;color:var(--amber);letter-spacing:.08em;text-transform:uppercase}
+.gallery-info .g-name{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--espresso);font-weight:600}
+
+/* GALLERY MODAL */
+.gallery-modal-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(10,5,2,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px}
+.gallery-modal-overlay.open{display:flex}
+.gallery-modal-box{background:var(--white);border-radius:24px;overflow:hidden;max-width:560px;width:100%;animation:fadeUp .35s ease;position:relative}
+.gallery-modal-img{height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.gallery-modal-emoji{font-size:8rem;z-index:1;animation:floatY 3s ease-in-out infinite;filter:drop-shadow(0 8px 24px rgba(0,0,0,.3))}
+.gallery-floats{position:absolute;inset:0;pointer-events:none;z-index:2}
+@keyframes gfloat{0%,100%{transform:translate(0,0) rotate(0deg) scale(1)}33%{transform:translate(6px,-10px) rotate(10deg) scale(1.1)}66%{transform:translate(-6px,4px) rotate(-8deg) scale(.95)}}
+.gfloat{position:absolute;font-size:1.8rem;animation:gfloat 2.5s ease-in-out infinite}
+.gfloat:nth-child(1){top:16px;left:16px}
+.gfloat:nth-child(2){top:16px;right:16px}
+.gfloat:nth-child(3){bottom:16px;left:50%;transform:translateX(-50%)}
+.gallery-modal-body{padding:24px 28px 28px}
+.gallery-modal-cat{font-size:.72rem;font-weight:700;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.gallery-modal-name{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--espresso);margin-bottom:10px}
+.gallery-modal-desc{font-size:.9rem;color:var(--text-muted);line-height:1.7;margin-bottom:20px}
+.gallery-nav-btn{position:absolute;top:130px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;box-shadow:var(--shadow);transition:all var(--transition);z-index:10}
+.gallery-nav-btn:hover{background:var(--amber);color:var(--white);transform:scale(1.1)}
+.gallery-nav-prev{left:12px}
+.gallery-nav-next{right:12px}
+.gallery-close-btn{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;font-size:1rem;z-index:10;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.gallery-close-btn:hover{background:var(--amber);color:var(--white)}
+.gallery-counter{position:absolute;bottom:12px;right:16px;background:rgba(0,0,0,.5);color:white;padding:4px 12px;border-radius:100px;font-size:.75rem;z-index:10}
+
+/* ─────────────────────────────────────────
+   PAKET PAGE — with food images
+───────────────────────────────────────── */
+.paket-hero,.menu-hero,.price-hero,.addon-hero{padding:60px 5% 40px;text-align:center}
+.paket-overview-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;padding:0 5% 48px}
+.paket-overview-section{background:var(--white);border-radius:var(--radius);padding:32px;border:1px solid var(--cream-dark)}
+.paket-overview-section h3{font-size:1.3rem;color:var(--espresso);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--amber)}
+.paket-type-list{display:flex;flex-direction:column;gap:12px}
+.paket-type-item{display:flex;align-items:flex-start;gap:14px;padding:14px;background:var(--cream);border-radius:10px}
+.paket-type-icon{font-size:1.8rem;flex-shrink:0}
+.paket-type-info h4{font-size:1rem;color:var(--espresso);margin-bottom:2px;font-weight:600}
+.paket-type-info p{font-size:.82rem;color:var(--text-muted);line-height:1.5}
+.paket-cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:0 5% 80px}
+.paket-card{background:var(--white);border-radius:var(--radius);border:2px solid var(--cream-dark);transition:all var(--transition);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.paket-card.featured{border-color:var(--amber);box-shadow:var(--shadow-lg)}
+.paket-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.paket-card.featured:hover{transform:translateY(-6px)}
+/* Food image area */
+.paket-img-wrap{width:100%;height:170px;overflow:hidden;position:relative;background:linear-gradient(135deg,#3D2010,#6B3A1F);flex-shrink:0}
+.paket-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+.paket-card:hover .paket-img-wrap img{transform:scale(1.06)}
+.paket-img-label{position:absolute;top:10px;left:10px;background:rgba(30,18,8,.72);backdrop-filter:blur(4px);color:white;font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:100px;letter-spacing:.06em;text-transform:uppercase}
+.paket-img-label.healthy{background:rgba(45,74,45,.85)}
+.paket-card-body{padding:20px 18px 18px;display:flex;flex-direction:column;flex:1}
+.paket-badge{position:absolute;top:148px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--white);font-size:.7rem;font-weight:700;padding:5px 16px;border-radius:100px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;z-index:2;box-shadow:0 2px 8px rgba(200,131,58,.4)}
+.paket-icon{font-size:2.5rem;position:absolute;top:12px;right:12px;background:linear-gradient(135deg,#FDF0DC 0%,#FBE8D0 100%);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(200,131,58,.3),inset 0 2px 8px rgba(255,255,255,.5);z-index:5;animation:iconBounce 0.6s ease-out;transition:all 0.3s ease;border:2px solid rgba(200,131,58,.2)}
+.paket-card:hover .paket-icon{transform:scale(1.15) rotate(8deg);box-shadow:0 8px 24px rgba(200,131,58,.5)}
+@keyframes iconBounce{from{transform:scale(0.3) translateY(-20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.paket-name{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--espresso);margin-bottom:4px}
+.paket-desc{font-size:.8rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5}
+.paket-price{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--amber);margin-bottom:4px}
+.paket-price span{font-size:.82rem;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-weight:400}
+.paket-note{font-size:.75rem;color:var(--text-muted);margin-bottom:14px}
+.paket-features{margin-bottom:16px;flex:1}
+.paket-features li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--cream-dark);font-size:.82rem;color:var(--text-muted)}
+.paket-features li .fi{font-size:.9rem;width:18px;text-align:center;flex-shrink:0;margin-top:2px}
+.paket-features li strong{color:var(--espresso)}
+.comparison-wrapper{padding:0 5% 80px;overflow-x:auto}
+.comparison-table{width:100%;min-width:800px;border-collapse:separate;border-spacing:0}
+.comparison-table th,.comparison-table td{padding:14px 16px;text-align:center;border-bottom:1px solid var(--cream-dark)}
+.comparison-table th{position:sticky;top:70px;background:var(--espresso);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;padding:18px 14px}
+.comparison-table th:first-child{text-align:left;background:var(--brown)}
+.comparison-table th.highlight{background:var(--amber)}
+.comparison-table td:first-child{text-align:left;font-weight:500;color:var(--espresso);background:var(--white);font-size:.875rem}
+.comparison-table tr:nth-child(even) td{background:var(--cream)}
+.comparison-table tr:nth-child(even) td:first-child{background:var(--cream-dark)}
+.comparison-table td.highlight{background:var(--amber-pale)!important}
+.comparison-table td{font-size:.82rem}
+.check{color:var(--sage);font-size:1.1rem}
+.cross{color:#CCC;font-size:1.1rem}
+.badge-popular{display:inline-block;background:#FF6B35;color:var(--white);font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:100px;letter-spacing:.05em;text-transform:uppercase;margin-top:4px}
+
+/* ─────────────────────────────────────────
+   MENU PAGE
+───────────────────────────────────────── */
+.menu-filter{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0 5% 48px}
+.filter-btn{padding:8px 20px;border-radius:100px;border:2px solid var(--cream-dark);background:var(--white);color:var(--text-muted);font-size:.875rem;font-weight:500;transition:all var(--transition);cursor:pointer}
+.filter-btn:hover,.filter-btn.active{background:var(--amber);border-color:var(--amber);color:var(--white)}
+.weekly-menu-section{padding:0 5% 80px}
+.menu-type-section{margin-bottom:60px}
+.menu-type-header{background:var(--sage);color:var(--white);padding:20px 32px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between}
+.menu-type-header h3{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--white)}
+.menu-type-header .menu-type-sub{font-size:.82rem;color:rgba(255,255,255,.7)}
+.menu-table-wrap{overflow-x:auto;background:var(--white);border-radius:0 0 16px 16px;border:1px solid var(--cream-dark);border-top:none}
+.menu-table{width:100%;border-collapse:collapse;min-width:700px}
+.menu-table th{background:var(--espresso);color:var(--white);padding:12px 16px;font-size:.82rem;font-weight:600;text-align:center}
+.menu-table th:first-child{text-align:left}
+.menu-table td{padding:12px 16px;border-bottom:1px solid var(--cream-dark);font-size:.82rem;text-align:center;color:var(--text-muted)}
+.menu-table td:first-child{text-align:left;color:var(--espresso);font-weight:500}
+.menu-table tr:last-child td{border-bottom:none}
+.menu-table tr:nth-child(even) td{background:var(--cream)}
+.menu-separator{background:var(--sage-pale)!important}
+.menu-separator td{color:var(--sage)!important;font-weight:600;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.paket-pricetag{display:inline-block;padding:3px 10px;background:var(--amber-pale);color:var(--amber);border-radius:100px;font-size:.72rem;font-weight:600}
+.paket-pricetag.green{background:var(--sage-pale);color:var(--sage)}
+
+/* ─────────────────────────────────────────
+   PRICELIST PAGE
+───────────────────────────────────────── */
+.price-note-bar{margin:0 5% 32px;background:var(--sage-pale);border:1px solid rgba(74,103,65,.2);border-radius:var(--radius);padding:16px 24px;display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--sage)}
+.price-category{padding:0 5% 60px}
+.price-category-title{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--espresso);margin-bottom:4px}
+.price-category-title em{font-style:italic;color:var(--amber)}
+.price-category-sub{font-size:.875rem;color:var(--text-muted);margin-bottom:28px}
+.price-table-wrap{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow)}
+.price-table{width:100%;border-collapse:collapse;min-width:700px}
+.price-table thead th{background:var(--espresso);color:var(--white);padding:16px 20px;font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;text-align:center}
+.price-table thead th:first-child{text-align:left}
+.price-table tbody td{padding:14px 20px;border-bottom:1px solid var(--cream-dark);font-size:.875rem;text-align:center;color:var(--text-muted)}
+.price-table tbody td:first-child{text-align:left;color:var(--espresso);font-weight:500}
+.price-table tbody tr:last-child td{border-bottom:none}
+.price-table tbody tr:nth-child(even) td{background:var(--cream)}
+.price-table .price-val{font-weight:700;color:var(--espresso);font-size:.95rem}
+.price-table .price-val.amber{color:var(--amber)}
+.price-table .price-val.green{color:var(--sage)}
+.disposable-badge{display:inline-block;padding:2px 10px;background:var(--amber);color:white;border-radius:100px;font-size:.65rem;font-weight:700;letter-spacing:.04em}
+.reusable-badge{display:inline-block;padding:2px 10px;background:var(--sage);color:white;border-radius:100px;font-size:.65rem;font-weight:700;letter-spacing:.04em}
+.price-harian-row{background:var(--sage-pale)!important}
+.price-harian-row td{color:var(--sage)!important;font-weight:600}
+.btn-pesan-sm{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#25D366;color:white;border-radius:100px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn-pesan-sm:hover{background:#20C05C;transform:translateY(-1px)}
+.btn-pesan-sm svg{width:13px;height:13px}
+
+/* ─────────────────────────────────────────
+   ADD-ON PAGE
+───────────────────────────────────────── */
+.addon-section{padding:0 5% 60px}
+.addon-section-title{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--espresso);margin-bottom:4px}
+.addon-section-sub{font-size:.875rem;color:var(--text-muted);margin-bottom:28px}
+.kreasi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px}
+.kreasi-card{background:var(--white);border-radius:var(--radius);overflow:hidden;border:1px solid var(--cream-dark);display:flex;flex-direction:column;transition:all var(--transition);position:relative}
+.kreasi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--amber);transform:scaleX(0);transform-origin:left;transition:transform var(--transition)}
+.kreasi-card:hover{box-shadow:var(--shadow);transform:translateY(-4px)}
+.kreasi-card:hover::before{transform:scaleX(1)}
+.kreasi-img{height:150px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;position:relative;overflow:hidden}
+.kreasi-body{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1}
+.kreasi-card h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--espresso);margin-bottom:4px}
+.kreasi-card p{font-size:.82rem;color:var(--text-muted);margin-bottom:12px;flex:1;line-height:1.5}
+.kreasi-price{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--amber);margin-bottom:14px}
+.kreasi-price span{font-size:.82rem;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-weight:400}
+.qty-control{display:flex;align-items:center;justify-content:center;gap:0;border:2px solid var(--cream-dark);border-radius:100px;overflow:hidden;background:var(--cream)}
+.qty-btn{width:36px;height:36px;border:none;background:none;font-size:1.1rem;font-weight:700;color:var(--espresso);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.qty-btn:hover{background:var(--amber);color:white}
+.qty-btn.minus:hover{background:#e74c3c;color:white}
+.qty-num{min-width:36px;text-align:center;font-size:.9rem;font-weight:700;color:var(--espresso)}
+.qty-control.has-qty{border-color:var(--amber);background:var(--amber-pale)}
+.qty-control.has-qty .qty-num{color:var(--amber)}
+.jus-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.jus-card{background:var(--espresso);border-radius:var(--radius);overflow:hidden;transition:all var(--transition)}
+.jus-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.jus-card .qty-control{justify-content:flex-start}
+.jus-card-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative}
+.jus-card-body{padding:24px}
+.jus-info .jus-brand{font-size:.8rem;color:var(--amber-light);font-weight:600;margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase}
+.jus-info h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--white);margin-bottom:8px}
+.jus-info p{font-size:.875rem;color:rgba(255,255,255,.6);margin-bottom:16px}
+.jus-price{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--amber-light);margin-bottom:16px}
+.jus-price span{font-size:.9rem;color:rgba(255,255,255,.5);font-family:'DM Sans';font-weight:400}
+
+/* ─────────────────────────────────────────
+   FLOATING CART PANEL
+───────────────────────────────────────── */
+.cart-fab{position:fixed;bottom:24px;left:24px;z-index:990;background:#25D366;color:var(--white);border:none;border-radius:100px;padding:14px 20px;display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;box-shadow:0 8px 32px rgba(37,211,102,.5);cursor:pointer;transition:all var(--transition);animation:fadeUp .5s ease 1s both}
+.cart-fab:hover{transform:translateY(-4px) scale(1.03)}
+.cart-fab svg{width:20px;height:20px}
+.cart-fab-badge{background:var(--espresso);color:var(--white);border-radius:100px;padding:2px 8px;font-size:.75rem;font-weight:800;min-width:22px;text-align:center;display:none}
+.cart-fab-badge.show{display:inline-block}
+.cart-overlay{display:none;position:fixed;inset:0;z-index:1990;background:rgba(30,18,8,.4);backdrop-filter:blur(3px)}
+.cart-overlay.open{display:block}
+.cart-panel{position:fixed;bottom:0;left:0;right:0;z-index:2000;background:var(--white);border-radius:24px 24px 0 0;box-shadow:0 -8px 40px rgba(30,18,8,.2);transform:translateY(100%);transition:transform .45s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column}
+.cart-panel.open{transform:translateY(0)}
+@media(min-width:769px){
+  .cart-panel{left:auto;bottom:0;top:0;right:0;width:420px;border-radius:0;max-height:100vh;transform:translateX(100%)}
+  .cart-panel.open{transform:translateX(0)}
+  .cart-fab{bottom:32px;left:32px}
+}
+.cart-panel-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--cream-dark);padding-bottom:16px;position:sticky;top:0;background:var(--white);z-index:1}
+.cart-panel-header h2{font-size:1.3rem;color:var(--espresso)}
+.cart-panel-close{width:36px;height:36px;border-radius:50%;background:var(--cream-dark);border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.cart-panel-close:hover{background:var(--amber);color:var(--white)}
+.cart-panel-body{padding:20px 24px;flex:1}
+.cart-panel-footer{padding:16px 24px 24px;border-top:1px solid var(--cream-dark);background:var(--white);position:sticky;bottom:0}
+.cf-group{margin-bottom:14px}
+.cf-group label{display:block;font-size:.82rem;font-weight:600;color:var(--espresso);margin-bottom:5px}
+.cf-group input,.cf-group select,.cf-group textarea{width:100%;padding:10px 13px;border:2px solid var(--cream-dark);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--espresso);background:var(--cream);transition:border-color var(--transition);outline:none}
+.cf-group input:focus,.cf-group select:focus,.cf-group textarea:focus{border-color:var(--amber)}
+.cf-group textarea{resize:vertical;min-height:60px}
+.cf-check-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:4px}
+.cf-check-row span{font-size:.82rem;color:var(--text-muted);line-height:1.45}
+#cfAskDiscount{width:auto !important;padding:0;border:none;background:transparent;margin-top:2px;accent-color:var(--amber)}
+.cf-note{font-size:.75rem;color:var(--text-muted);line-height:1.45}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cart-addon-list{margin-bottom:16px}
+.cart-addon-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--cream);border-radius:8px;margin-bottom:6px;font-size:.82rem}
+.cart-addon-item .ca-name{font-weight:600;color:var(--espresso)}
+.cart-addon-item .ca-price{color:var(--amber);font-weight:700}
+.cart-addon-item .ca-qty-ctrl{display:flex;align-items:center;gap:6px}
+.mini-qty-btn{width:24px;height:24px;border-radius:50%;border:none;background:var(--cream-dark);font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.mini-qty-btn:hover{background:var(--amber);color:white}
+.mini-qty-btn.minus-btn:hover{background:#e74c3c;color:white}
+.cart-total-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:2px solid var(--cream-dark);margin-bottom:12px}
+.cart-total-row span{font-weight:600;color:var(--text-muted);font-size:.875rem}
+.cart-total-row strong{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--amber)}
+.cart-empty{text-align:center;padding:24px 0;color:var(--text-muted);font-size:.9rem}
+.cart-submit-btn{width:100%;padding:16px;background:#25D366;color:var(--white);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all var(--transition)}
+.cart-submit-btn:hover{background:#20C05C;transform:translateY(-2px)}
+.cart-submit-btn svg{width:20px;height:20px}
+.scroll-top{position:fixed;bottom:90px;right:24px;z-index:980;width:44px;height:44px;border-radius:50%;background:var(--white);border:2px solid var(--cream-dark);display:none;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;box-shadow:var(--shadow);transition:all var(--transition)}
+.scroll-top.visible{display:flex}
+.scroll-top:hover{background:var(--amber);border-color:var(--amber);color:var(--white)}
+#toastMsg{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--espresso);color:#fff;padding:12px 24px;border-radius:100px;font-size:.875rem;font-weight:600;z-index:9999;opacity:0;transition:all .4s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.3);pointer-events:none}
+#toastMsg.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* FOOTER */
+footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand .logo-text{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--white);margin-bottom:12px}
+.footer-brand .logo-text em{font-style:italic;color:var(--amber-light)}
+.footer-brand p{font-size:.875rem;line-height:1.7;max-width:280px}
+.footer-col h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--white);margin-bottom:16px}
+.footer-col ul li{margin-bottom:8px}
+.footer-col ul li a{font-size:.875rem;color:rgba(255,255,255,.6);transition:color var(--transition)}
+.footer-col ul li a:hover{color:var(--amber-light)}
+/* ── CONTACT ITEMS — uniform icon size ── */
+.footer-col .contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:.875rem}
+.contact-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.contact-icon svg{width:18px;height:18px;display:block}
+.contact-icon-emoji{font-size:14px;line-height:1;display:block}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-bottom p{font-size:.82rem}
+.footer-wa-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;background:#25D366;color:var(--white);border-radius:100px;font-size:.875rem;font-weight:600;transition:all var(--transition)}
+.footer-wa-btn:hover{background:#20C05C}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .paket-cards-grid{grid-template-columns:repeat(2,1fr)}
+  .layanan-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .hero{grid-template-columns:1fr;padding:40px 5%}
+  .hero-visual{display:none}
+  .services-grid{grid-template-columns:1fr}
+  .paket-overview-grid{grid-template-columns:1fr}
+  .paket-cards-grid{grid-template-columns:1fr}
+  .syarat-grid{grid-template-columns:1fr}
+  .kemasan-grid{grid-template-columns:1fr}
+  .kreasi-grid{grid-template-columns:repeat(2,1fr)}
+  .jus-grid{grid-template-columns:1fr}
+  .steps-grid{grid-template-columns:1fr}
+  .how-section,.cta-section,.layanan-section{margin:0 0 60px;border-radius:0}
+  .cta-section{flex-direction:column;text-align:center}
+  .footer-grid{grid-template-columns:1fr;gap:32px}
+  .section{padding:60px 5%}
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-modal-img{height:220px}
+  .gallery-nav-btn{top:90px}
+  .cart-fab{left:auto;right:12px;bottom:16px;padding:10px 14px;gap:8px;font-size:.8rem}
+  .cart-fab svg{width:16px;height:16px}
+  .cart-fab-badge{padding:1px 6px;font-size:.68rem;min-width:18px}
+  body.menu-open .cart-fab{display:none}
+  .map-modal-box{max-height:95vh}
+  #mapContainer{min-height:260px}
+}
+@media(max-width:480px){
+  .kreasi-grid{grid-template-columns:1fr}
+  .gallery-grid{grid-template-columns:1fr}
+  .cf-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo">
+    <div class="logo-icon">🍽️</div>
+    <span>Daily <em>Catering</em></span>
+  </div>
+  <div class="nav-links">
+    <a href="#home" class="nav-link active" data-page="home">Home</a>
+    <a href="#paket" class="nav-link" data-page="paket">Perbedaan Paket</a>
+    <a href="#menu" class="nav-link" data-page="menu">Menu</a>
+    <a href="#harga" class="nav-link" data-page="harga">Pricelist</a>
+    <a href="#addon" class="nav-link" data-page="addon">Add On</a>
+    <a class="nav-wa btn" onclick="openCart()" style="margin-left:8px;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+      Pesan Sekarang
+    </a>
+  </div>
+  <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#home" class="nav-link active" data-page="home" onclick="toggleMobileMenu()">Home</a>
+  <a href="#paket" class="nav-link" data-page="paket" onclick="toggleMobileMenu()">Perbedaan Paket</a>
+  <a href="#menu" class="nav-link" data-page="menu" onclick="toggleMobileMenu()">Menu</a>
+  <a href="#harga" class="nav-link" data-page="harga" onclick="toggleMobileMenu()">Pricelist</a>
+  <a href="#addon" class="nav-link" data-page="addon" onclick="toggleMobileMenu()">Add On</a>
+  <a class="nav-wa btn" style="margin-top:16px;" onclick="openCart();toggleMobileMenu()">
+    <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+    Buka Keranjang
+  </a>
+</div>
+
+<!-- ════════════════════ HOME ════════════════════ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow"><span>🍳 Daily Catering Jogja</span></div>
+      <h1 class="hero-h1">A Taste of<br><em>Daily Catering</em><br>Jogja</h1>
+      <p class="hero-desc">Our new menu is here with fresh flavors and selected ingredients. Catering makan siang &amp; malam diantar langsung ke lokasi Anda di Yogyakarta.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="navigateTo('harga')">Lihat Pricelist</button>
+        <button class="btn btn-outline" onclick="navigateTo('menu')">Cek Menu</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num">7</div><div class="label">Jenis Paket</div></div>
+        <div class="hero-stat"><div class="num">2x</div><div class="label">Pengiriman/Hari</div></div>
+        <div class="hero-stat"><div class="num">14+</div><div class="label">Area Pengiriman</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card-main">
+        <div class="food-grid">
+          <div class="food-cell">🍛</div><div class="food-cell">🥗</div>
+          <div class="food-cell">🥘</div><div class="food-cell">🍱</div>
+        </div>
+      </div>
+      <div class="hero-badge">
+        <div class="badge-icon">🚴</div>
+        <div class="badge-text"><strong>Gratis Antar!</strong><span>Area Yogyakarta</span></div>
+      </div>
+      <div class="hero-floating">
+        <div class="float-num">7</div>
+        <div class="float-label">Pilihan Paket</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="center reveal">
+      <div class="section-label">🍽️ What We Provide</div>
+      <h2 class="section-title">Services</h2>
+      <p class="section-subtitle">Kami melayani catering makan siang dan makan malam dengan pengiriman tepat waktu ke lokasi Anda.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="s-label">Layanan 1</div>
+        <h3>Catering Makan Siang</h3>
+        <p>Pengiriman makan siang ke area Jogja dan sekitarnya. Menu berganti setiap hari dengan bahan-bahan segar.</p>
+        <div class="s-time">⏰ Pengiriman: 11.00 – 12.00 WIB</div>
+      </div>
+      <div class="service-card reveal">
+        <div class="s-label">Layanan 2</div>
+        <h3>Catering Makan Malam</h3>
+        <p>Nikmati makan malam yang lezat tanpa repot masak. Tersedia untuk semua paket mingguan dan bulanan.</p>
+        <div class="s-time">⏰ Pengiriman: 17.00 – 19.00 WIB</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="layanan-section">
+    <div class="center reveal">
+      <div class="section-label">📍 Jangkauan Kami</div>
+      <h2 class="section-title">Area Pengiriman</h2>
+      <p class="section-subtitle" style="color:rgba(255,255,255,.6);margin:0 auto 40px">Kami melayani pengiriman ke area umum dan kawasan kampus di Yogyakarta</p>
+    </div>
+    <div class="layanan-grid">
+      <div>
+        <h4>📌 Area Umum</h4>
+        <div class="layanan-list">
+          <div class="layanan-item"><div class="layanan-num">1</div> Jalan Jakal</div>
+          <div class="layanan-item"><div class="layanan-num">2</div> Condong Catur</div>
+          <div class="layanan-item"><div class="layanan-num">3</div> Minomartani</div>
+          <div class="layanan-item"><div class="layanan-num">4</div> Medokan Taman</div>
+          <div class="layanan-item"><div class="layanan-num">5</div> Sarihardjo</div>
+          <div class="layanan-item"><div class="layanan-num">6</div> Sinduharjo</div>
+          <div class="layanan-item"><div class="layanan-num">7</div> Jalan Palagan</div>
+          <div class="layanan-item"><div class="layanan-num">8</div> Beturan</div>
+          <div class="layanan-item"><div class="layanan-num">9</div> Babarsari</div>
+          <div class="layanan-item"><div class="layanan-num">10</div> Jalan Monalisi</div>
+          <div class="layanan-item"><div class="layanan-num">11</div> Tirto</div>
+          <div class="layanan-item"><div class="layanan-num">12</div> Jalan Raya Tajem</div>
+          <div class="layanan-item"><div class="layanan-num">13</div> Dalam Ringroad</div>
+        </div>
+      </div>
+      <div>
+        <h4>🎓 Area Kampus</h4>
+        <div class="layanan-list">
+          <div class="layanan-item"><div class="layanan-num">1</div> UII Pusat / UII Congot</div>
+          <div class="layanan-item"><div class="layanan-num">2</div> UGM</div>
+          <div class="layanan-item"><div class="layanan-num">3</div> UPN</div>
+          <div class="layanan-item"><div class="layanan-num">4</div> UPN Congot</div>
+          <div class="layanan-item"><div class="layanan-num">5</div> AMKON Congot</div>
+          <div class="layanan-item"><div class="layanan-num">6</div> GAZAMI</div>
+          <div class="layanan-item"><div class="layanan-num">7</div> UIN Suka</div>
+          <div class="layanan-item"><div class="layanan-num">8</div> UMY</div>
+          <div class="layanan-item"><div class="layanan-num">9</div> ALMA ATA</div>
+          <div class="layanan-item"><div class="layanan-num">10</div> UMU Azehan</div>
+          <div class="layanan-item"><div class="layanan-num">11</div> STPN</div>
+          <div class="layanan-item"><div class="layanan-num">12</div> Politeknik Kesehatan</div>
+          <div class="layanan-item"><div class="layanan-num">13</div> UTY</div>
+          <div class="layanan-item"><div class="layanan-num">14</div> UAD</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="center reveal">
+      <div class="section-label">📋 Syarat &amp; Ketentuan</div>
+      <h2 class="section-title">Hal Penting yang Perlu Diketahui</h2>
+    </div>
+    <div class="syarat-grid">
+      <div class="syarat-card reveal"><div class="syarat-icon">⏭️</div><h3>Skip Catering</h3><p>Ingin skip pengiriman? Hubungi admin WA Daily Catering Jogja sebelum pengiriman. Jam maksimal jam 8 malam hari sebelumnya.</p></div>
+      <div class="syarat-card reveal"><div class="syarat-icon">🏠</div><h3>Perubahan Alamat</h3><p>Jika ingin mengubah alamat pengiriman, segera hubungi admin WA kami. Konfirmasi dilakukan H-1 sebelum pengantaran.</p></div>
+      <div class="syarat-card reveal"><div class="syarat-icon">💰</div><h3>Deposit Catering</h3><p>Pemesanan catering memerlukan deposit di awal. Hubungi admin kami untuk informasi lebih lanjut mengenai metode pembayaran.</p></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="center reveal">
+      <div class="section-label">📦 Pilihan Kemasan</div>
+      <h2 class="section-title">Disposable Box <span style="font-style:italic;color:var(--amber)">atau</span> Reusable Box</h2>
+    </div>
+    <div class="kemasan-grid">
+      <div class="kemasan-card reveal"><div class="kemasan-icon">📦</div><h3>Disposable Box</h3><p>Box sekali pakai yang praktis dan higienis. Cocok untuk kamu yang tidak ingin repot mengembalikan kotak makan. Ramah lingkungan dan mudah dibuang setelah digunakan.</p></div>
+      <div class="kemasan-card featured reveal"><div class="kemasan-icon">🍱</div><h3>Reusable Box</h3><p>Box dapat digunakan kembali berkali-kali. Lebih ekonomis dan ramah lingkungan. Kotak dikembalikan ke kurir saat pengiriman berikutnya — cukup sisihkan di depan pintu.</p></div>
+    </div>
+  </section>
+
+  <section class="gallery-section">
+    <div class="center reveal">
+      <div class="section-label">📸 Galeri Makanan</div>
+      <h2 class="section-title">Lihat Tampilan Menu Kami</h2>
+      <p class="section-subtitle">Klik gambar untuk melihat detail dan pesan langsung!</p>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-card reveal" onclick="openGallery(0)">
+        <div class="gallery-img" style="background-image:url('https://i.pinimg.com/736x/ed/8a/15/ed8a157c3b3a09e36d35bd0e98ba9d38.jpg');background-size:cover;background-position:center"><div class="gallery-overlay"><span class="view-btn">👁 Lihat Detail</span></div></div>
+        <div class="gallery-info"><div class="g-cat">Reguler</div><div class="g-name">Nasi Ayam Goreng Kremes</div></div>
+      </div>
+      <div class="gallery-card reveal" onclick="openGallery(1)">
+        <div class="gallery-img" style="background-image:url('https://i.pinimg.com/1200x/14/88/57/1488573b589df1451c69f003ca48fcdb.jpg');background-size:cover;background-position:center"><div class="gallery-overlay"><span class="view-btn">👁 Lihat Detail</span></div></div>
+        <div class="gallery-info"><div class="g-cat">Bigsize</div><div class="g-name">Nasi Bigsize Lengkap</div></div>
+      </div>
+      <div class="gallery-card reveal" onclick="openGallery(2)">
+        <div class="gallery-img" style="background-image:url('https://i.pinimg.com/736x/32/7d/e5/327de50b97138d35c4f323f60006f82e.jpg');background-size:cover;background-position:center"><div class="gallery-overlay"><span class="view-btn">👁 Lihat Detail</span></div></div>
+        <div class="gallery-info"><div class="g-cat">Diet</div><div class="g-name">Paket Diet Sehat</div></div>
+      </div>
+      <div class="gallery-card reveal" onclick="openGallery(3)">
+        <div class="gallery-img" style="background-image:url('https://i.pinimg.com/1200x/8f/53/bf/8f53bf58d1d2935bf50381bd20189413.jpg');background-size:cover;background-position:center"><div class="gallery-overlay"><span class="view-btn">👁 Lihat Detail</span></div></div>
+        <div class="gallery-info"><div class="g-cat">Fampack</div><div class="g-name">Fampack Keluarga</div></div>
+      </div>
+      <div class="gallery-card reveal" onclick="openGallery(4)">
+        <div class="gallery-img" style="background-image:url('https://i.pinimg.com/736x/0f/55/71/0f5571d580344330254a967c2c734033.jpg');background-size:cover;background-position:center"><div class="gallery-overlay"><span class="view-btn">👁 Lihat Detail</span></div></div>
+        <div class="gallery-info"><div class="g-cat">Freshealthy</div><div class="g-name">Freshealthy Premium</div></div>
+      </div>
+      <div class="gallery-card reveal" onclick="openGallery(7)">
+        <div class="gallery-img" style="background-image:url('https://i.pinimg.com/originals/57/c6/33/57c6330ca4c3cace0b49961ba6b21f72.png');background-size:cover;background-position:center"><div class="gallery-overlay"><span class="view-btn">👁 Lihat Detail</span></div></div>
+        <div class="gallery-info"><div class="g-cat">Menu Andalan</div><div class="g-name">Ayam Bakar Kecap</div></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:28px"><button class="btn btn-outline" onclick="openGallery(0)">📸 Lihat Semua Foto Menu →</button></div>
+  </section>
+
+  <div class="how-section">
+    <div class="center reveal">
+      <div class="section-label">📋 Cara Order</div>
+      <h2 class="section-title">Cara Pesan Mudah &amp; Cepat</h2>
+      <p class="section-subtitle" style="color:rgba(255,255,255,.6);margin:0 auto 48px">3 langkah simpel untuk nikmati catering lezat setiap hari</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card reveal"><div class="step-num s1">1</div><h3>Cek Menu &amp; Pilih Paket</h3><p>Lihat menu mingguan dan pilih paket yang sesuai — Reguler, Funsize, Bigsize, Fampack, Diet, Funhealthy, atau Freshealthy.</p></div>
+      <div class="step-card reveal"><div class="step-num s2">2</div><h3>Isi Form &amp; Deposit</h3><p>Buka Keranjang Pesanan, isi form lengkap, dan pilih tanggal mulai. Lakukan deposit untuk mengamankan slot catering.</p></div>
+      <div class="step-card reveal"><div class="step-num s3">3</div><h3>Terima &amp; Nikmati!</h3><p>Makanan diantar tepat waktu ke lokasi Anda. Cek menu di Instagram @amos_zil untuk update terbaru.</p></div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <div class="cta-content reveal"><h2>Siap Pesan Catering Hari Ini?</h2><p>Amankan slot catering Anda sekarang. Klik tombol di bawah, isi form, dan kami kirim ke pintu Anda!</p></div>
+    <div class="cta-actions reveal">
+      <button class="btn btn-white" style="min-width:220px" onclick="openCart()">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+        Pesan via WhatsApp
+      </button>
+      <button class="btn" style="background:rgba(255,255,255,.15);color:white;min-width:220px" onclick="navigateTo('harga')">Lihat Semua Harga</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ PAKET ════════════════════ -->
+<div class="page" id="page-paket">
+  <section class="paket-hero">
+    <div class="section-label">📦 Pilihan Paket</div>
+    <h2 class="section-title">Paket Catering Kami</h2>
+    <p style="color:var(--text-muted);max-width:560px;margin:0 auto">Tersedia 7 jenis paket — pilih sesuai kebutuhan nutrisi dan selera Anda. Dari Reguler hingga Freshealthy untuk gaya hidup sehat.</p>
+  </section>
+  <div class="paket-overview-grid">
+    <div class="paket-overview-section reveal">
+      <h3>🍱 Paket Reguler</h3>
+      <div class="paket-type-list">
+        <div class="paket-type-item"><div class="paket-type-icon">🥗</div><div class="paket-type-info"><h4>Paket Reguler</h4><p>Nasi putih + lauk + sayur. Porsi standar, cocok untuk kebutuhan makan sehari-hari.</p></div></div>
+        <div class="paket-type-item"><div class="paket-type-icon">😄</div><div class="paket-type-info"><h4>Paket Funsize</h4><p>Porsi lebih kecil/hemat. Cocok untuk yang makannya sedikit atau anak-anak.</p></div></div>
+        <div class="paket-type-item"><div class="paket-type-icon">💪</div><div class="paket-type-info"><h4>Paket Bigsize</h4><p>Porsi jumbo untuk yang aktif dan butuh energi lebih. Lauk dan nasi extra.</p></div></div>
+        <div class="paket-type-item"><div class="paket-type-icon">👨‍👩‍👧‍👦</div><div class="paket-type-info"><h4>Paket Fampack</h4><p>Paket keluarga. Cocok untuk memesan dalam jumlah banyak sekaligus, lebih hemat.</p></div></div>
+      </div>
+    </div>
+    <div class="paket-overview-section reveal">
+      <h3>🥦 Paket Healthy</h3>
+      <div class="paket-type-list">
+        <div class="paket-type-item"><div class="paket-type-icon">🥬</div><div class="paket-type-info"><h4>Paket Diet</h4><p>Menu rendah kalori, kontrol porsi, nasi merah/quinoa. Ideal untuk program diet sehat.</p></div></div>
+        <div class="paket-type-item"><div class="paket-type-icon">🏃</div><div class="paket-type-info"><h4>Paket Funhealthy</h4><p>Perpaduan menu sehat yang tetap lezat. Sayur-sayuran segar dengan protein seimbang.</p></div></div>
+        <div class="paket-type-item"><div class="paket-type-icon">🌱</div><div class="paket-type-info"><h4>Paket Freshealthy</h4><p>Menu paling sehat — bahan-bahan premium pilihan, rendah minyak, tinggi serat dan protein.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAKET CARDS WITH FOOD IMAGES -->
+  <div class="paket-cards-grid">
+
+    <!-- REGULER -->
+    <div class="paket-card reveal">
+      <div class="paket-img-wrap">
+        <img src="https://i.pinimg.com/736x/51/0b/c7/510bc77ea98fad796209d1123561905d.jpg" alt="Paket Reguler" onerror="this.style.display='none'">
+        <div class="paket-img-label">Reguler</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">🥗</div>
+        <div class="paket-name">Reguler</div>
+        <div class="paket-desc">Nasi putih, lauk, sayur. Porsi standar sehari-hari.</div>
+        <div class="paket-price">Rp 82.500 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 82.500 · Disposable box</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi putih</div></li>
+          <li><span class="fi">🍗</span><div>1 Lauk utama</div></li>
+          <li><span class="fi">🥬</span><div>1 Sayur</div></li>
+          <li><span class="fi">📦</span><div>Disposable / Reusable box</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="selectPaket('Reguler 1 — 6x makan Rp 82.500')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+    <!-- FUNSIZE -->
+    <div class="paket-card reveal">
+      <div class="paket-img-wrap">
+        <img src="https://i.pinimg.com/736x/cb/ee/de/cbeedece827a528b29feb5d44f650ed2.jpg" alt="Paket Funsize" onerror="this.style.display='none'">
+        <div class="paket-img-label">Funsize</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">😄</div>
+        <div class="paket-name">Funsize</div>
+        <div class="paket-desc">Porsi lebih kecil, harga lebih terjangkau.</div>
+        <div class="paket-price">Rp 67.500 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 67.500 · Cocok untuk porsi kecil</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi putih (porsi kecil)</div></li>
+          <li><span class="fi">🍗</span><div>1 Lauk utama</div></li>
+          <li><span class="fi">🥬</span><div>1 Sayur</div></li>
+          <li><span class="fi">📦</span><div>Disposable / Reusable box</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="selectPaket('Funsize 1 — 6x makan Rp 67.500')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+    <!-- BIGSIZE -->
+    <div class="paket-card featured reveal">
+      <div class="paket-badge">💪 Porsi Besar</div>
+      <div class="paket-img-wrap">
+        <img src="https://i.pinimg.com/736x/b0/da/9a/b0da9afc893a87746411551d22b11b2f.jpg" alt="Paket Bigsize" onerror="this.style.display='none'">
+        <div class="paket-img-label">Bigsize</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">💪</div>
+        <div class="paket-name">Bigsize</div>
+        <div class="paket-desc">Porsi jumbo untuk aktivitas tinggi.</div>
+        <div class="paket-price">Rp 112.500 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 112.500 · Nasi &amp; lauk extra</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi putih (porsi besar)</div></li>
+          <li><span class="fi">🍗</span><div>2 Lauk utama</div></li>
+          <li><span class="fi">🥬</span><div>1–2 Sayur</div></li>
+          <li><span class="fi">📦</span><div>Disposable / Reusable box</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%" onclick="selectPaket('Bigsize 1 — 6x makan Rp 112.500')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+    <!-- FAMPACK -->
+    <div class="paket-card reveal">
+      <div class="paket-img-wrap">
+        <img src="https://i.pinimg.com/736x/a8/48/51/a848518cc551f8875ca1d4231438df63.jpg" alt="Paket Fampack" onerror="this.style.display='none'">
+        <div class="paket-img-label">Fampack</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">👨‍👩‍👧‍👦</div>
+        <div class="paket-name">Fampack</div>
+        <div class="paket-desc">Paket keluarga, lebih hemat pesan banyak.</div>
+        <div class="paket-price">Rp 77.500 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 77.500 · Cocok untuk keluarga</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi putih + lauk</div></li>
+          <li><span class="fi">🥬</span><div>Sayur pilihan</div></li>
+          <li><span class="fi">👨‍👩‍👧‍👦</span><div>Ideal untuk 2–4 orang</div></li>
+          <li><span class="fi">📦</span><div>Disposable / Reusable box</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="selectPaket('Fampack 1 — 6x makan Rp 77.500')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+    <!-- DIET -->
+    <div class="paket-card reveal">
+      <div class="paket-img-wrap" style="background:linear-gradient(135deg,#1E3A1E,#2D5A2D)">
+        <img src="https://i.pinimg.com/736x/ed/8a/15/ed8a157c3b3a09e36d35bd0e98ba9d38.jpg" alt="Paket Diet" onerror="this.style.display='none'">
+        <div class="paket-img-label healthy">Diet</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">🥬</div>
+        <div class="paket-name">Diet</div>
+        <div class="paket-desc">Rendah kalori, nasi merah, kontrol porsi.</div>
+        <div class="paket-price">Rp 72.500 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 72.500 · Menu diet terencana</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi merah / nasi putih</div></li>
+          <li><span class="fi">🥩</span><div>Protein rendah lemak</div></li>
+          <li><span class="fi">🥗</span><div>Sayur &amp; buah segar</div></li>
+          <li><span class="fi">🔥</span><div>Rendah kalori &amp; minyak</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="selectPaket('Diet 1 — 2x makan Rp 72.500')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+    <!-- FUNHEALTHY -->
+    <div class="paket-card reveal">
+      <div class="paket-img-wrap" style="background:linear-gradient(135deg,#223A1A,#3A5A2D)">
+        <img src="https://i.pinimg.com/736x/04/7d/4b/047d4bdecd117fcd9dd713a36ba4b9c5.jpg" alt="Paket Funhealthy" onerror="this.style.display='none'">
+        <div class="paket-img-label healthy">Funhealthy</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">🏃</div>
+        <div class="paket-name">Funhealthy</div>
+        <div class="paket-desc">Menu sehat yang tetap lezat dan bergizi.</div>
+        <div class="paket-price">Rp 97.500 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 97.500 · Sehat &amp; enak</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi putih / merah</div></li>
+          <li><span class="fi">🥩</span><div>Protein seimbang</div></li>
+          <li><span class="fi">🥗</span><div>Sayur fresh setiap hari</div></li>
+          <li><span class="fi">🌿</span><div>Bahan pilihan bergizi</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="selectPaket('Funhealthy 1 — 6x makan Rp 97.500')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+    <!-- FRESHEALTHY -->
+    <div class="paket-card reveal">
+      <div class="paket-img-wrap" style="background:linear-gradient(135deg,#0D200D,#1E3A1E)">
+        <img src="https://i.pinimg.com/736x/7a/8b/bf/7a8bbf7c5f53ec4ab5cab0935402f2d6.jpg" alt="Paket Freshealthy" onerror="this.style.display='none'">
+        <div class="paket-img-label healthy">Freshealthy</div>
+      </div>
+      <div class="paket-card-body">
+        <div class="paket-icon">🌱</div>
+        <div class="paket-name">Freshealthy</div>
+        <div class="paket-desc">Paket paling premium — bahan terbaik, super sehat.</div>
+        <div class="paket-price">Rp 135.000 <span>/minggu (1x)</span></div>
+        <div class="paket-note">Mulai dari Rp 135.000 · Menu premium</div>
+        <ul class="paket-features">
+          <li><span class="fi">🍚</span><div>Nasi merah premium</div></li>
+          <li><span class="fi">🥩</span><div>Protein pilihan</div></li>
+          <li><span class="fi">🥗</span><div>Sayur organik segar</div></li>
+          <li><span class="fi">🌿</span><div>Tinggi serat &amp; antioksidan</div></li>
+          <li><span class="fi">🚴</span><div>Gratis antar area Jogja</div></li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="selectPaket('Freshealthy 1 — 2x makan Rp 135.000')">Pilih Paket Ini</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="comparison-wrapper">
+    <div style="padding:0 0 24px"><div class="section-label">📊 Perbandingan Paket</div><h3 class="section-title" style="font-size:1.8rem">Tabel Perbandingan</h3></div>
+    <table class="comparison-table">
+      <thead><tr><th>Fitur</th><th>Reguler</th><th>Funsize</th><th class="highlight">Bigsize</th><th>Fampack</th><th>Diet</th><th>Funhealthy</th><th>Freshealthy</th></tr></thead>
+      <tbody>
+        <tr><td>Nasi</td><td>Putih</td><td>Putih (kecil)</td><td class="highlight">Putih (besar)</td><td>Putih</td><td>Merah/Putih</td><td>Merah/Putih</td><td>Merah Premium</td></tr>
+        <tr><td>Lauk</td><td>1 macam</td><td>1 macam</td><td class="highlight">2 macam</td><td>1–2 macam</td><td>Rendah lemak</td><td>Seimbang</td><td>Premium</td></tr>
+        <tr><td>Sayur</td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td class="highlight"><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+        <tr><td>Rendah Kalori</td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td class="highlight"><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+        <tr><td>Antar Gratis</td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td class="highlight"><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td><td><span class="check">✔</span></td></tr>
+        <tr><td>Harga Mulai</td><td>Rp 82.500</td><td>Rp 67.500</td><td class="highlight" style="color:var(--amber);font-weight:700">Rp 112.500</td><td>Rp 77.500</td><td>Rp 72.500</td><td>Rp 97.500</td><td>Rp 135.000</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════ MENU ════════════════════ -->
+<div class="page" id="page-menu">
+  <section class="menu-hero">
+    <div class="section-label">🍽️ Menu Weekly</div>
+    <h2 class="section-title">Menu Mingguan</h2>
+    <p style="color:var(--text-muted);max-width:520px;margin:0 auto 8px">Open Order! Free ongkir + 4 Box · Free Order. Menu berganti setiap minggu.</p>
+  </section>
+  <div class="menu-filter">
+    <button class="filter-btn active" data-filter="all">Semua Menu</button>
+    <button class="filter-btn" data-filter="reguler">🥗 Reguler</button>
+    <button class="filter-btn" data-filter="funsize">😄 Funsize</button>
+    <button class="filter-btn" data-filter="bigsize">💪 Bigsize</button>
+    <button class="filter-btn" data-filter="fampack">👨‍👩‍👧‍👦 Fampack</button>
+    <button class="filter-btn" data-filter="healthy">🥦 Menu Healthy</button>
+  </div>
+  <div class="weekly-menu-section">
+    <div class="menu-type-section" data-cat="reguler">
+      <div class="menu-type-header"><h3>Regular Menu</h3><span class="menu-type-sub">Nasi putih + lauk + sayur. Tersedia siang atau malam.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Lauk 1</th><th>Lauk 2</th><th>Sayur</th><th>Lauk Tambahan</th><th>Paket</th></tr></thead><tbody>
+        <tr class="menu-separator"><td colspan="6">📅 SENIN</td></tr>
+        <tr><td>Senin</td><td>Ayam Goreng Kremes</td><td>Tempe Orek</td><td>Sayur Asem</td><td>Sambel + Kerupuk</td><td><span class="paket-pricetag">Reguler</span></td></tr>
+        <tr class="menu-separator"><td colspan="6">📅 SELASA</td></tr>
+        <tr><td>Selasa</td><td>Ayam Bakar Kecap</td><td>Tahu Goreng</td><td>Tumis Kangkung</td><td>Sambel Bawang</td><td><span class="paket-pricetag">Reguler</span></td></tr>
+        <tr class="menu-separator"><td colspan="6">📅 RABU</td></tr>
+        <tr><td>Rabu</td><td>Ikan Goreng Bumbu</td><td>Tempe Mendoan</td><td>Sayur Lodeh</td><td>Kerupuk + Lalapan</td><td><span class="paket-pricetag">Reguler</span></td></tr>
+        <tr class="menu-separator"><td colspan="6">📅 KAMIS</td></tr>
+        <tr><td>Kamis</td><td>Daging Balado</td><td>Tahu Bacem</td><td>Tumis Buncis</td><td>Sambel Ijo</td><td><span class="paket-pricetag">Reguler</span></td></tr>
+        <tr class="menu-separator"><td colspan="6">📅 JUMAT</td></tr>
+        <tr><td>Jumat</td><td>Ayam Gulai</td><td>Tempe Goreng</td><td>Cap Cay</td><td>Kerupuk</td><td><span class="paket-pricetag">Reguler</span></td></tr>
+        <tr class="menu-separator"><td colspan="6">📅 SABTU</td></tr>
+        <tr><td>Sabtu</td><td>Udang Saus Padang</td><td>Perkedel Jagung</td><td>Sayur Sop</td><td>Sambel + Lalapan</td><td><span class="paket-pricetag">Reguler</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="menu-type-section" data-cat="funsize">
+      <div class="menu-type-header"><h3>Funsize Menu</h3><span class="menu-type-sub">Porsi lebih kecil, harga lebih terjangkau.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Lauk</th><th>Sayur</th><th>Pelengkap</th><th>Paket</th></tr></thead><tbody>
+        <tr><td>Senin</td><td>Ayam Goreng</td><td>Tumis Sayur</td><td>Kerupuk</td><td><span class="paket-pricetag">Funsize</span></td></tr>
+        <tr><td>Selasa</td><td>Telur Balado</td><td>Sayur Asem</td><td>Kerupuk</td><td><span class="paket-pricetag">Funsize</span></td></tr>
+        <tr><td>Rabu</td><td>Ikan Goreng</td><td>Cap Cay</td><td>Sambal</td><td><span class="paket-pricetag">Funsize</span></td></tr>
+        <tr><td>Kamis</td><td>Tempe Orek</td><td>Kangkung Terasi</td><td>Kerupuk</td><td><span class="paket-pricetag">Funsize</span></td></tr>
+        <tr><td>Jumat</td><td>Ayam Kecap</td><td>Sayur Lodeh</td><td>Sambal</td><td><span class="paket-pricetag">Funsize</span></td></tr>
+        <tr><td>Sabtu</td><td>Tahu Bacem</td><td>Tumis Buncis</td><td>Kerupuk</td><td><span class="paket-pricetag">Funsize</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="menu-type-section" data-cat="bigsize">
+      <div class="menu-type-header"><h3>Bigsize Menu</h3><span class="menu-type-sub">Porsi jumbo dengan 2 lauk. Untuk yang aktif dan butuh energi lebih.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Lauk Utama</th><th>Lauk Pendamping</th><th>Sayur</th><th>Pelengkap</th><th>Paket</th></tr></thead><tbody>
+        <tr><td>Senin</td><td>Ayam Goreng Kremes</td><td>Tempe Orek + Tahu</td><td>Sayur Asem</td><td>Sambel + Kerupuk</td><td><span class="paket-pricetag">Bigsize</span></td></tr>
+        <tr><td>Selasa</td><td>Ayam Bakar</td><td>Daging Sapi Kecap</td><td>Tumis Kangkung</td><td>Lalapan + Sambel</td><td><span class="paket-pricetag">Bigsize</span></td></tr>
+        <tr><td>Rabu</td><td>Ikan Bakar</td><td>Perkedel Kentang</td><td>Sayur Sop</td><td>Kerupuk</td><td><span class="paket-pricetag">Bigsize</span></td></tr>
+        <tr><td>Kamis</td><td>Daging Rendang</td><td>Telur Balado + Tahu</td><td>Tumis Buncis</td><td>Sambel Ijo</td><td><span class="paket-pricetag">Bigsize</span></td></tr>
+        <tr><td>Jumat</td><td>Udang Goreng</td><td>Ayam Krispi</td><td>Cap Cay</td><td>Sambal + Kerupuk</td><td><span class="paket-pricetag">Bigsize</span></td></tr>
+        <tr><td>Sabtu</td><td>Cumi Saus Tiram</td><td>Tempe Mendoan</td><td>Sayur Lodeh</td><td>Kerupuk</td><td><span class="paket-pricetag">Bigsize</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="menu-type-section" data-cat="fampack">
+      <div class="menu-type-header"><h3>Fampack Menu</h3><span class="menu-type-sub">Paket keluarga dengan porsi besar. Satu boks untuk berbagi.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Lauk Utama</th><th>Lauk 2</th><th>Sayur</th><th>Paket</th></tr></thead><tbody>
+        <tr><td>Senin</td><td>Ayam Goreng (2 pcs)</td><td>Tempe + Tahu</td><td>Sayur Asem</td><td><span class="paket-pricetag">Fampack</span></td></tr>
+        <tr><td>Selasa</td><td>Ikan Goreng (2 pcs)</td><td>Perkedel + Tempe</td><td>Tumis Kangkung</td><td><span class="paket-pricetag">Fampack</span></td></tr>
+        <tr><td>Rabu</td><td>Ayam Bakar (2 pcs)</td><td>Tahu Bacem + Tempe</td><td>Sayur Lodeh</td><td><span class="paket-pricetag">Fampack</span></td></tr>
+        <tr><td>Kamis</td><td>Daging Balado</td><td>Telur + Tempe</td><td>Cap Cay</td><td><span class="paket-pricetag">Fampack</span></td></tr>
+        <tr><td>Jumat</td><td>Udang + Ayam</td><td>Tahu + Tempe</td><td>Sayur Sop</td><td><span class="paket-pricetag">Fampack</span></td></tr>
+        <tr><td>Sabtu</td><td>Ayam Krispi (2 pcs)</td><td>Perkedel + Tahu</td><td>Tumis Mix</td><td><span class="paket-pricetag">Fampack</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div style="margin:60px 0 32px"><div class="section-label" style="background:var(--sage-pale);color:var(--sage);border-color:rgba(74,103,65,.3)">🥦 Menu Healthy</div><h3 class="section-title" style="font-size:1.8rem">Menu Healthy Package</h3><p style="color:var(--text-muted);margin-bottom:36px">Menu sehat dengan bahan pilihan — cocok untuk yang peduli kesehatan dan gaya hidup aktif.</p></div>
+    <div class="menu-type-section" data-cat="healthy">
+      <div class="menu-type-header" style="background:linear-gradient(135deg,#2D5A2D,#1a3a1a)"><h3>Diet Package</h3><span class="menu-type-sub">Rendah kalori, nasi merah, protein lean.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Nasi</th><th>Protein</th><th>Sayur / Pendamping</th><th>Paket</th></tr></thead><tbody>
+        <tr><td>Senin</td><td>Nasi Merah</td><td>Dada Ayam Rebus</td><td>Brokoli + Wortel Rebus</td><td><span class="paket-pricetag green">Diet</span></td></tr>
+        <tr><td>Selasa</td><td>Nasi Merah</td><td>Ikan Kukus Lemon</td><td>Tumis Sayuran</td><td><span class="paket-pricetag green">Diet</span></td></tr>
+        <tr><td>Rabu</td><td>Nasi Putih (kecil)</td><td>Telur Rebus + Tempe</td><td>Sayur Rebus Mix</td><td><span class="paket-pricetag green">Diet</span></td></tr>
+        <tr><td>Kamis</td><td>Nasi Merah</td><td>Ayam Panggang</td><td>Salad Sayur</td><td><span class="paket-pricetag green">Diet</span></td></tr>
+        <tr><td>Jumat</td><td>Nasi Merah</td><td>Ikan Goreng (minyak sedikit)</td><td>Tumis Kangkung</td><td><span class="paket-pricetag green">Diet</span></td></tr>
+        <tr><td>Sabtu</td><td>Nasi Merah</td><td>Daging Sapi Rendah Lemak</td><td>Brokoli + Tofu</td><td><span class="paket-pricetag green">Diet</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="menu-type-section" data-cat="healthy" style="margin-top:32px">
+      <div class="menu-type-header" style="background:linear-gradient(135deg,#3A5A2D,#223A1a)"><h3>Funhealthy Package</h3><span class="menu-type-sub">Sehat yang tetap lezat. Protein tinggi, sayur melimpah.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Nasi</th><th>Protein Utama</th><th>Sayur</th><th>Pelengkap</th><th>Paket</th></tr></thead><tbody>
+        <tr><td>Senin</td><td>Nasi Merah</td><td>Ayam Bumbu Rempah</td><td>Tumis Brokoli</td><td>Buah Potong</td><td><span class="paket-pricetag green">Funhealthy</span></td></tr>
+        <tr><td>Selasa</td><td>Nasi Putih</td><td>Ikan Bumbu Kuning</td><td>Cap Cay Sayur</td><td>Buah Potong</td><td><span class="paket-pricetag green">Funhealthy</span></td></tr>
+        <tr><td>Rabu</td><td>Nasi Merah</td><td>Dada Ayam Panggang</td><td>Tumis Sayuran Mix</td><td>Jus Segar</td><td><span class="paket-pricetag green">Funhealthy</span></td></tr>
+        <tr><td>Kamis</td><td>Nasi Merah</td><td>Ikan Salmon Bumbu</td><td>Salad Sayur</td><td>Buah Potong</td><td><span class="paket-pricetag green">Funhealthy</span></td></tr>
+        <tr><td>Jumat</td><td>Nasi Putih</td><td>Udang Saus Lemon</td><td>Tumis Kangkung</td><td>Jus Segar</td><td><span class="paket-pricetag green">Funhealthy</span></td></tr>
+        <tr><td>Sabtu</td><td>Nasi Merah</td><td>Ayam Bumbu Bali</td><td>Tumis Buncis</td><td>Buah Potong</td><td><span class="paket-pricetag green">Funhealthy</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="menu-type-section" data-cat="healthy" style="margin-top:32px">
+      <div class="menu-type-header" style="background:linear-gradient(135deg,#1E3A1E,#0D200D)"><h3>Freshealthy Package</h3><span class="menu-type-sub">Paket paling premium — bahan organik, tinggi antioksidan &amp; serat.</span></div>
+      <div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>Hari</th><th>Nasi</th><th>Protein Premium</th><th>Sayur Organik</th><th>Bonus</th><th>Paket</th></tr></thead><tbody>
+        <tr><td>Senin</td><td>Nasi Merah Organik</td><td>Ayam Organik Panggang</td><td>Brokoli + Wortel Organik</td><td>Jus Freshence</td><td><span class="paket-pricetag green">Freshealthy</span></td></tr>
+        <tr><td>Selasa</td><td>Nasi Merah Organik</td><td>Ikan Salmon</td><td>Salad Sayur Organik</td><td>Buah Potong</td><td><span class="paket-pricetag green">Freshealthy</span></td></tr>
+        <tr><td>Rabu</td><td>Nasi Merah Organik</td><td>Dada Ayam Kukus</td><td>Tumis Sayuran Premium</td><td>Jus Freshence</td><td><span class="paket-pricetag green">Freshealthy</span></td></tr>
+        <tr><td>Kamis</td><td>Nasi Merah Organik</td><td>Ikan Kukus Rempah</td><td>Brokoli + Edamame</td><td>Buah Potong</td><td><span class="paket-pricetag green">Freshealthy</span></td></tr>
+        <tr><td>Jumat</td><td>Nasi Merah Organik</td><td>Ayam Bumbu Herbal</td><td>Mix Greens Salad</td><td>Jus Freshence</td><td><span class="paket-pricetag green">Freshealthy</span></td></tr>
+        <tr><td>Sabtu</td><td>Nasi Merah Organik</td><td>Udang / Ikan Panggang</td><td>Tumis Sayur Organik</td><td>Buah Potong</td><td><span class="paket-pricetag green">Freshealthy</span></td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ PRICELIST ════════════════════ -->
+<div class="page" id="page-harga">
+  <section class="price-hero">
+    <div class="section-label">💰 Daftar Harga</div>
+    <h2 class="section-title">Pricelist Lengkap</h2>
+    <p style="color:var(--text-muted);max-width:520px;margin:0 auto">Semua harga sudah termasuk ongkir area Yogyakarta. Tersedia pilihan Disposable Box dan Reusable Box.</p>
+  </section>
+  <div class="price-note-bar" style="margin:0 5% 48px">
+    <span>💡</span>
+    <span>Harga berlaku per <strong>1 porsi</strong>. Klik tombol <strong>Pesan</strong> di setiap baris untuk langsung melanjutkan ke pemesanan.</span>
+  </div>
+  <div class="price-category">
+    <div class="section-label">🥗 Paket Reguler</div>
+    <div class="price-category-title">Pricelist <em>Reguler</em> Menu</div>
+    <div class="price-category-sub">Nasi putih + lauk + sayur. Tersedia siang atau malam.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>REGULER 1</td><td>6x makan, siang atau malam</td><td class="price-val">Rp 82.500</td><td class="price-val amber">Rp 87.500 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 77.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Reguler 1 — 6x makan Rp 82.500')">🛒 Pesan</button></td></tr>
+        <tr><td>REGULER 2</td><td>12x makan, siang dan malam</td><td class="price-val">Rp 165.000</td><td class="price-val amber">Rp 175.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 155.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Reguler 2 — 12x makan Rp 165.000')">🛒 Pesan</button></td></tr>
+        <tr><td>2 MINGGU REG 1</td><td>12x makan, siang atau malam</td><td class="price-val">Rp 162.000</td><td class="price-val amber">Rp 172.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('2 Minggu Reguler 1 — Rp 162.000')">🛒 Pesan</button></td></tr>
+        <tr><td>2 MINGGU REG 2</td><td>24x makan, siang dan malam</td><td class="price-val">Rp 320.000</td><td class="price-val amber">Rp 338.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('2 Minggu Reguler 2 — Rp 320.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN REG 1</td><td>26x makan, siang atau malam</td><td class="price-val">Rp 320.000</td><td class="price-val amber">Rp 536.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Reguler 1 — Rp 320.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN REG 2</td><td>52x makan, siang dan malam</td><td class="price-val">Rp 535.000</td><td class="price-val amber">Rp 675.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Reguler 2 — Rp 535.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan, siang atau malam</td><td class="price-val" colspan="3">Rp 16.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Reguler 1x — Rp 16.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan, siang dan malam</td><td class="price-val" colspan="3">Rp 30.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Reguler 2x — Rp 30.500')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="price-category">
+    <div class="section-label">😄 Paket Funsize</div>
+    <div class="price-category-title">Pricelist <em>Funsize</em> Menu</div>
+    <div class="price-category-sub">Porsi lebih kecil, harga lebih terjangkau.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>FUNSIZE 1</td><td>6x makan</td><td class="price-val">Rp 67.500</td><td class="price-val amber">Rp 72.500 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 62.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Funsize 1 — 6x makan Rp 67.500')">🛒 Pesan</button></td></tr>
+        <tr><td>FUNSIZE 2</td><td>12x makan</td><td class="price-val">Rp 130.000</td><td class="price-val amber">Rp 140.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 120.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Funsize 2 — 12x makan Rp 130.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FUN 1</td><td>26x makan</td><td class="price-val">Rp 258.000</td><td class="price-val amber">Rp 278.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Funsize 1 — Rp 258.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FUN 2</td><td>52x makan</td><td class="price-val">Rp 508.000</td><td class="price-val amber">Rp 548.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Funsize 2 — Rp 508.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan</td><td class="price-val" colspan="3">Rp 14.750</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Funsize 1x — Rp 14.750')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan</td><td class="price-val" colspan="3">Rp 29.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Funsize 2x — Rp 29.000')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="price-category">
+    <div class="section-label">💪 Paket Bigsize</div>
+    <div class="price-category-title">Pricelist <em>Bigsize</em> Menu</div>
+    <div class="price-category-sub">Porsi jumbo dengan 2 lauk utama.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>BIGSIZE 1</td><td>6x makan</td><td class="price-val">Rp 112.500</td><td class="price-val amber">Rp 117.500 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 107.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Bigsize 1 — 6x makan Rp 112.500')">🛒 Pesan</button></td></tr>
+        <tr><td>BIGSIZE 2</td><td>12x makan</td><td class="price-val">Rp 220.000</td><td class="price-val amber">Rp 230.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 210.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Bigsize 2 — 12x makan Rp 220.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN BIG 1</td><td>26x makan</td><td class="price-val">Rp 438.000</td><td class="price-val amber">Rp 872.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Bigsize 1 — Rp 438.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN BIG 2</td><td>46x makan</td><td class="price-val">Rp 872.000</td><td class="price-val amber">Rp 912.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Bigsize 2 — Rp 872.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan</td><td class="price-val" colspan="3">Rp 24.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Bigsize 1x — Rp 24.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan</td><td class="price-val" colspan="3">Rp 47.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Bigsize 2x — Rp 47.500')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="price-category">
+    <div class="section-label">👨‍👩‍👧‍👦 Paket Fampack</div>
+    <div class="price-category-title">Pricelist <em>Fampack</em> Menu</div>
+    <div class="price-category-sub">Paket keluarga — lebih hemat untuk memesan lebih banyak.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>FAMPACK 1</td><td>6x makan</td><td class="price-val">Rp 77.500</td><td class="price-val amber">Rp 82.500 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 72.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Fampack 1 — 6x makan Rp 77.500')">🛒 Pesan</button></td></tr>
+        <tr><td>FAMPACK 2</td><td>12x makan</td><td class="price-val">Rp 152.000</td><td class="price-val amber">Rp 160.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 144.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Fampack 2 — 12x makan Rp 152.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FAM 1</td><td>26x makan</td><td class="price-val">Rp 302.000</td><td class="price-val amber">Rp 592.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Fampack 1 — Rp 302.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FAM 2</td><td>52x makan</td><td class="price-val">Rp 592.000</td><td class="price-val amber">Rp 632.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Fampack 2 — Rp 592.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan</td><td class="price-val" colspan="3">Rp 17.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Fampack 1x — Rp 17.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan</td><td class="price-val" colspan="3">Rp 33.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Fampack 2x — Rp 33.500')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="price-category">
+    <div class="section-label" style="background:var(--sage-pale);color:var(--sage);border-color:rgba(74,103,65,.3)">🥬 Paket Diet</div>
+    <div class="price-category-title">Pricelist <em>Diet</em> Package</div>
+    <div class="price-category-sub">Rendah kalori, nasi merah, protein lean.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>DIET 1</td><td>2x makan</td><td class="price-val">Rp 72.500</td><td class="price-val amber">Rp 77.500 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 67.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Diet 1 — 2x makan Rp 72.500')">🛒 Pesan</button></td></tr>
+        <tr><td>DIET 2</td><td>12x makan</td><td class="price-val">Rp 140.000</td><td class="price-val amber">Rp 150.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 130.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Diet 2 — 12x makan Rp 140.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN DIET 1</td><td>20x makan</td><td class="price-val">Rp 278.000</td><td class="price-val amber">Rp 298.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Diet 1 — Rp 278.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN DIET 2</td><td>40x makan</td><td class="price-val">Rp 548.000</td><td class="price-val amber">Rp 588.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Diet 2 — Rp 548.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan</td><td class="price-val" colspan="3">Rp 16.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Diet 1x — Rp 16.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan</td><td class="price-val" colspan="3">Rp 31.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Diet 2x — Rp 31.500')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="price-category">
+    <div class="section-label" style="background:var(--sage-pale);color:var(--sage);border-color:rgba(74,103,65,.3)">🏃 Paket Funhealthy</div>
+    <div class="price-category-title">Pricelist <em>Funhealthy</em> Package</div>
+    <div class="price-category-sub">Menu sehat yang tetap lezat dan bergizi.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>FUNH 1</td><td>6x makan</td><td class="price-val">Rp 97.500</td><td class="price-val amber">Rp 102.500 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 92.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Funhealthy 1 — 6x makan Rp 97.500')">🛒 Pesan</button></td></tr>
+        <tr><td>FUNH 2</td><td>12x makan</td><td class="price-val">Rp 190.000</td><td class="price-val amber">Rp 200.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 180.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Funhealthy 2 — 12x makan Rp 190.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FUNH 1</td><td>20x makan</td><td class="price-val">Rp 378.000</td><td class="price-val amber">Rp 398.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Funhealthy 1 — Rp 378.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FUNH 2</td><td>40x makan</td><td class="price-val">Rp 748.000</td><td class="price-val amber">Rp 788.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Funhealthy 2 — Rp 748.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan</td><td class="price-val" colspan="3">Rp 21.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Funhealthy 1x — Rp 21.500')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan</td><td class="price-val" colspan="3">Rp 41.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Funhealthy 2x — Rp 41.000')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="price-category">
+    <div class="section-label" style="background:var(--sage-pale);color:var(--sage);border-color:rgba(74,103,65,.3)">🌱 Paket Freshealthy</div>
+    <div class="price-category-title">Pricelist <em>Freshealthy</em> Package</div>
+    <div class="price-category-sub">Paket paling premium — bahan pilihan terbaik, super sehat.</div>
+    <div class="price-table-wrap"><table class="price-table">
+      <thead><tr><th>Paket</th><th>Keterangan</th><th>Harga Normal</th><th>Disposable Box</th><th>Reusable Box</th><th>Pesan</th></tr></thead>
+      <tbody>
+        <tr><td>FRESH 1</td><td>2x makan</td><td class="price-val">Rp 135.000</td><td class="price-val amber">Rp 160.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 125.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Freshealthy 1 — 2x makan Rp 135.000')">🛒 Pesan</button></td></tr>
+        <tr><td>FRESH 2</td><td>10x makan</td><td class="price-val">Rp 265.000</td><td class="price-val amber">Rp 275.000 <span class="disposable-badge">BOX</span></td><td class="price-val green">Rp 255.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Freshealthy 2 — 10x makan Rp 265.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FRESH 1</td><td>20x makan</td><td class="price-val">Rp 528.000</td><td class="price-val amber">Rp 548.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Freshealthy 1 — Rp 528.000')">🛒 Pesan</button></td></tr>
+        <tr><td>1 BULAN FRESH 2</td><td>40x makan</td><td class="price-val">Rp 1.048.000</td><td class="price-val amber">Rp 1.088.000 <span class="disposable-badge">BOX</span></td><td></td><td><button class="btn-pesan-sm" onclick="selectPaket('1 Bulan Freshealthy 2 — Rp 1.048.000')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 1</td><td>1x makan</td><td class="price-val" colspan="3">Rp 28.500</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Freshealthy 1x — Rp 28.500')">🛒 Pesan</button></td></tr>
+        <tr class="price-harian-row"><td>HARIAN 2</td><td>2x makan</td><td class="price-val" colspan="3">Rp 56.000</td><td><button class="btn-pesan-sm" onclick="selectPaket('Harian Freshealthy 2x — Rp 56.000')">🛒 Pesan</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════════════════════ ADD-ON ════════════════════ -->
+<div class="page" id="page-addon">
+  <section class="addon-hero">
+    <div class="section-label">✨ Add On</div>
+    <h2 class="section-title">Kreasi Menu <em>Add On</em></h2>
+    <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Lengkapi kotak makan harianmu. Klik <strong>+</strong> untuk tambah, <strong>−</strong> untuk kurangi. Semua item yang ditambahkan otomatis masuk ke Keranjang Pesanan.</p>
+  </section>
+  <div class="addon-section">
+    <div class="addon-section-title">Kreasi Menu</div>
+    <div class="addon-section-sub">Tambahan makanan untuk melengkapi porsi catering harianmu.</div>
+    <div class="kreasi-grid" id="kreasigrid"></div>
+  </div>
+  <div class="addon-section">
+    <div class="addon-section-title">Jus Special Add On</div>
+    <div class="addon-section-sub">Minuman segar dari Freshence — tersedia dalam 2 ukuran.</div>
+    <div class="jus-grid">
+      <div class="jus-card reveal">
+        <div class="jus-card-img" style="background-image:url('https://i.pinimg.com/736x/fc/f4/0c/fcf40c9c34531475b4f5a79234ccd9e3.jpg');background-size:cover;background-position:center"></div>
+        <div class="jus-card-body">
+          <div class="jus-info">
+            <div class="jus-brand">Freshence</div>
+            <h3>Jus Segar 250ml</h3>
+            <p>Jus buah segar berbagai pilihan rasa. Ukuran besar, menyegarkan!</p>
+            <div class="jus-price">Rp 12.000 <span>/ 250 ml</span></div>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+              <div class="qty-control" id="qc-jus250"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 250ml',12000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 250ml">0</span><button class="qty-btn" onclick="changeAddon('Jus Freshence 250ml',12000,1)">+</button></div>
+              <span id="qtot-Jus Freshence 250ml" style="font-size:.82rem;color:var(--amber);font-weight:700;display:none"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="jus-card reveal">
+        <div class="jus-card-img" style="background-image:url('https://i.pinimg.com/1200x/e5/08/98/e508983222703187fc99329d9e74e1d8.jpg');background-size:cover;background-position:center"></div>
+        <div class="jus-card-body">
+          <div class="jus-info">
+            <div class="jus-brand">Freshence</div>
+            <h3>Jus Segar 100ml</h3>
+            <p>Ukuran mini praktis, menyegarkan untuk menemani makan siangmu.</p>
+            <div class="jus-price">Rp 6.000 <span>/ 100 ml</span></div>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+              <div class="qty-control" id="qc-jus100"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 100ml',6000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 100ml">0</span><button class="qty-btn" onclick="changeAddon('Jus Freshence 100ml',6000,1)">+</button></div>
+              <span id="qtot-Jus Freshence 100ml" style="font-size:.82rem;color:var(--amber);font-weight:700;display:none"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin:0 5% 80px;background:var(--espresso);border-radius:32px;padding:60px 5%;text-align:center">
+    <div class="section-label" style="background:rgba(200,131,58,.2);border-color:rgba(200,131,58,.4);color:var(--amber-light)">📱 Stay Updated</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--white);margin-bottom:12px">Cek Menu dan Segera Amankan Slot Kamu</h2>
+    <p style="color:rgba(255,255,255,.6);margin-bottom:28px;font-size:.95rem">Follow Instagram kami untuk info menu terbaru dan promo menarik!</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="https://www.instagram.com/amos_zil/?hl=en" target="_blank" class="btn" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        @amos_zil
+      </a>
+      <button class="btn btn-wa" onclick="openCart()">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+        Pesan via WhatsApp
+      </button>
+    </div>
+    <p style="color:rgba(255,255,255,.4);font-size:.78rem;margin-top:20px">For order information: @amos_zil · 0822-7562-5828</p>
+  </div>
+</div>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo-text">Daily <em>Catering</em></div>
+      <p>Catering harian Yogyakarta dengan cita rasa masakan yang lezat dan bahan-bahan segar pilihan. Diantar langsung setiap hari.</p>
+      <div style="margin-top:20px">
+        <a class="footer-wa-btn" href="https://wa.me/6282275625828" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+          WhatsApp Kami
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Halaman</h4>
+      <ul>
+        <li><a href="#home" class="nav-link" data-page="home">Home</a></li>
+        <li><a href="#paket" class="nav-link" data-page="paket">Perbedaan Paket</a></li>
+        <li><a href="#menu" class="nav-link" data-page="menu">Menu</a></li>
+        <li><a href="#harga" class="nav-link" data-page="harga">Pricelist</a></li>
+        <li><a href="#addon" class="nav-link" data-page="addon">Add On</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Kontak</h4>
+      <!-- FIX: uniform icon sizes using .contact-icon wrapper -->
+      <div class="contact-item">
+        <span class="contact-icon"><span class="contact-icon-emoji">📱</span></span>
+        <span>0822-7562-5828<br><small style="opacity:.6">WhatsApp &amp; Telepon</small></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-icon">
+          <!-- Instagram icon: fixed 18x18, gradient via CSS filter approach -->
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;display:block">
+            <defs>
+              <linearGradient id="ig-footer-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f09433"/>
+                <stop offset="25%" stop-color="#e6683c"/>
+                <stop offset="50%" stop-color="#dc2743"/>
+                <stop offset="75%" stop-color="#cc2366"/>
+                <stop offset="100%" stop-color="#bc1888"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#ig-footer-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </span>
+        <span>@amos_zil<br><small style="opacity:.6">Instagram</small></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-icon"><span class="contact-icon-emoji">📍</span></span>
+        <span>Yogyakarta<br><small style="opacity:.6">Area pengiriman Kota Jogja &amp; kampus</small></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-icon"><span class="contact-icon-emoji">⏰</span></span>
+        <span>Siang 11.00–12.00 WIB<br>Malam 17.00–19.00 WIB</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Daily Catering Jogja. All rights reserved.</p>
+    <p style="opacity:.5;font-size:.78rem">Dibuat dengan ❤️ untuk pelanggan setia kami</p>
+  </div>
+</footer>
+
+<!-- ════════════ FAB ════════════ -->
+<button class="cart-fab" id="cartFab" onclick="openCart()">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+  <span id="cartFabLabel">Pesanan Anda</span>
+  <span class="cart-fab-badge" id="cartFabBadge">0</span>
+</button>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- ════════════ FLOATING CART PANEL ════════════ -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-panel-header">
+    <h2>🛒 Pesanan Anda</h2>
+    <button class="cart-panel-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-panel-body">
+    <div class="cf-group">
+      <label>Nama Lengkap *</label>
+      <input type="text" id="cfNama" placeholder="Contoh: Budi Santoso">
+    </div>
+    <div class="cf-group">
+      <label>Nomor WhatsApp *</label>
+      <input type="text" id="cfWA" placeholder="08123456789" inputmode="numeric" pattern="[0-9]*" maxlength="15" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+    </div>
+    <div class="cf-group">
+      <label>Paket yang Dipilih *</label>
+      <select id="cfPaket">
+        <option value="">-- Pilih Paket --</option>
+        <optgroup label="🥗 Reguler">
+          <option>Reguler 1 — 6x makan Rp 82.500</option>
+          <option>Reguler 2 — 12x makan Rp 165.000</option>
+          <option>2 Minggu Reguler 1 — Rp 162.000</option>
+          <option>2 Minggu Reguler 2 — Rp 320.000</option>
+          <option>1 Bulan Reguler 1 — Rp 320.000</option>
+          <option>1 Bulan Reguler 2 — Rp 535.000</option>
+          <option>Harian Reguler 1x — Rp 16.000</option>
+          <option>Harian Reguler 2x — Rp 30.500</option>
+        </optgroup>
+        <optgroup label="😄 Funsize">
+          <option>Funsize 1 — 6x makan Rp 67.500</option>
+          <option>Funsize 2 — 12x makan Rp 130.000</option>
+          <option>1 Bulan Funsize 1 — Rp 258.000</option>
+          <option>1 Bulan Funsize 2 — Rp 508.000</option>
+          <option>Harian Funsize 1x — Rp 14.750</option>
+          <option>Harian Funsize 2x — Rp 29.000</option>
+        </optgroup>
+        <optgroup label="💪 Bigsize">
+          <option>Bigsize 1 — 6x makan Rp 112.500</option>
+          <option>Bigsize 2 — 12x makan Rp 220.000</option>
+          <option>1 Bulan Bigsize 1 — Rp 438.000</option>
+          <option>1 Bulan Bigsize 2 — Rp 872.000</option>
+          <option>Harian Bigsize 1x — Rp 24.000</option>
+          <option>Harian Bigsize 2x — Rp 47.500</option>
+        </optgroup>
+        <optgroup label="👨‍👩‍👧‍👦 Fampack">
+          <option>Fampack 1 — 6x makan Rp 77.500</option>
+          <option>Fampack 2 — 12x makan Rp 152.000</option>
+          <option>1 Bulan Fampack 1 — Rp 302.000</option>
+          <option>1 Bulan Fampack 2 — Rp 592.000</option>
+          <option>Harian Fampack 1x — Rp 17.000</option>
+          <option>Harian Fampack 2x — Rp 33.500</option>
+        </optgroup>
+        <optgroup label="🥬 Diet">
+          <option>Diet 1 — 2x makan Rp 72.500</option>
+          <option>Diet 2 — 12x makan Rp 140.000</option>
+          <option>1 Bulan Diet 1 — Rp 278.000</option>
+          <option>1 Bulan Diet 2 — Rp 548.000</option>
+          <option>Harian Diet 1x — Rp 16.000</option>
+          <option>Harian Diet 2x — Rp 31.500</option>
+        </optgroup>
+        <optgroup label="🏃 Funhealthy">
+          <option>Funhealthy 1 — 6x makan Rp 97.500</option>
+          <option>Funhealthy 2 — 12x makan Rp 190.000</option>
+          <option>1 Bulan Funhealthy 1 — Rp 378.000</option>
+          <option>1 Bulan Funhealthy 2 — Rp 748.000</option>
+          <option>Harian Funhealthy 1x — Rp 21.500</option>
+          <option>Harian Funhealthy 2x — Rp 41.000</option>
+        </optgroup>
+        <optgroup label="🌱 Freshealthy">
+          <option>Freshealthy 1 — 2x makan Rp 135.000</option>
+          <option>Freshealthy 2 — 10x makan Rp 265.000</option>
+          <option>1 Bulan Freshealthy 1 — Rp 528.000</option>
+          <option>1 Bulan Freshealthy 2 — Rp 1.048.000</option>
+          <option>Harian Freshealthy 1x — Rp 28.500</option>
+          <option>Harian Freshealthy 2x — Rp 56.000</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="cf-row">
+      <div class="cf-group">
+        <label>Sesi Makan</label>
+        <select id="cfSesi">
+          <option>Makan Siang (11.00–12.00)</option>
+          <option>Makan Malam (17.00–19.00)</option>
+          <option>Siang &amp; Malam (2x sehari)</option>
+        </select>
+      </div>
+      <div class="cf-group">
+        <label>Jumlah Orang</label>
+        <select id="cfOrang">
+          <option value="1">1 orang</option>
+          <option value="2">2 orang</option>
+          <option value="3">3 orang</option>
+          <option value="4">4 orang</option>
+          <option value="5">5 orang</option>
+          <option value="6+">6+ orang</option>
+        </select>
+        <input type="number" id="cfOrangCustom" min="6" step="1" placeholder="Jumlah orang (min. 6)" style="display:none;margin-top:8px">
+      </div>
+    </div>
+    <div class="cf-row">
+      <div class="cf-group">
+        <label>Kemasan</label>
+        <select id="cfKemasan">
+          <option>Disposable Box</option>
+          <option>Reusable Box</option>
+        </select>
+      </div>
+      <div class="cf-group">
+        <label>Tanggal Mulai *</label>
+        <input type="date" id="cfTanggal">
+      </div>
+    </div>
+    <div class="cf-group">
+      <label>Alamat Pengiriman *</label>
+      <textarea id="cfAlamat" placeholder="Nama jalan, nomor, RT/RW, kelurahan..."></textarea>
+      <!-- Updated location button group with map + remove -->
+      <div class="location-btn-group">
+        <button type="button" class="btn-location" id="btnPickLoc" onclick="openMapModal()">
+          📍 Pilih Lokasi di Peta (Opsional)
+        </button>
+        <button type="button" class="btn-remove-location" id="btnRemoveLoc" onclick="removeLocation()">
+          ✕ Hapus
+        </button>
+      </div>
+      <small id="gpsStatus" style="font-size:11px;color:#777;margin-top:4px;display:block"></small>
+    </div>
+    <div id="cartAddonSummary"></div>
+    <div class="cf-group">
+      <textarea id="cfCatatan" placeholder="Contoh: tidak suka pedas, alergi udang..."></textarea>
+    </div>
+    <div class="cf-group" style="margin-top:2px">
+      <label class="cf-check-row">
+        <input type="checkbox" id="cfAskDiscount" checked>
+        <span>Tanyakan promo/diskon yang sedang berlaku</span>
+      </label>
+      <div class="cf-note">*Info harga promo bisa berubah sewaktu-waktu. Konfirmasi via WhatsApp.</div>
+    </div>
+  </div>
+  <div class="cart-panel-footer">
+    <div id="cartCalcSummary" style="display:none;font-size:.82rem;color:var(--text-muted);line-height:1.6;margin-bottom:8px"></div>
+    <div class="cart-total-row" id="cartTotalRow" style="display:none">
+      <span>Estimasi Total Pesanan:</span>
+      <strong id="cartTotalAmt">Rp 0</strong>
+    </div>
+    <button class="cart-submit-btn" onclick="submitOrder()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.138.564 4.14 1.544 5.875L0 24l6.289-1.516A11.935 11.935 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.002-1.372l-.36-.213-3.733.9.944-3.644-.234-.374A9.793 9.793 0 012.182 12c0-5.415 4.403-9.818 9.818-9.818 5.415 0 9.818 4.403 9.818 9.818 0 5.415-4.403 9.818-9.818 9.818z"/></svg>
+      Kirim Pesanan via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- ════════════ MAP MODAL ════════════ -->
+<div class="map-modal-overlay" id="mapModal">
+  <div class="map-modal-box">
+    <div class="map-modal-header">
+      <h3>📍 Pilih Lokasi Pengiriman</h3>
+      <button class="map-modal-close" onclick="closeMapModal()">✕</button>
+    </div>
+    <div class="map-search-bar">
+      <div class="map-search-wrapper">
+        <input type="text" class="map-search-input" id="mapSearchInput" placeholder="Cari alamat, nama tempat..." onkeypress="if(event.key==='Enter')searchMapLocation()">
+        <div class="map-search-results" id="mapSearchResults"></div>
+      </div>
+      <button class="map-search-btn" onclick="searchMapLocation()">🔍 Cari</button>
+    </div>
+    <div id="mapContainer"></div>
+    <div class="map-modal-footer">
+      <div class="map-selected-addr" id="mapSelectedAddr">
+        <span class="addr-pin">📌</span>
+        <span id="mapAddrText" style="color:var(--text-muted);font-style:italic">Klik pada peta atau cari alamat untuk memilih lokasi</span>
+      </div>
+      <div class="map-modal-actions">
+        <button class="map-use-btn" id="mapUseBtn" onclick="useSelectedLocation()" disabled style="opacity:.5;cursor:not-allowed">
+          ✅ Pakai Lokasi Ini
+        </button>
+        <button class="map-cancel-btn" onclick="closeMapModal()">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY MODAL -->
+<div class="gallery-modal-overlay" id="galleryModal">
+  <div class="gallery-modal-box">
+    <button class="gallery-close-btn" onclick="closeGallery()">✕</button>
+    <button class="gallery-nav-btn gallery-nav-prev" onclick="galleryNav(-1)">‹</button>
+    <button class="gallery-nav-btn gallery-nav-next" onclick="galleryNav(1)">›</button>
+    <div class="gallery-modal-img" style="background:linear-gradient(135deg,#8B4513,#C8833A)">
+      <div class="gallery-floats"></div>
+      <span class="gallery-modal-emoji">🍛</span>
+    </div>
+    <span class="gallery-counter">1 / 9</span>
+    <div class="gallery-modal-body">
+      <div class="gallery-modal-cat">Reguler</div>
+      <div class="gallery-modal-name">Nasi Ayam Goreng Kremes</div>
+      <div class="gallery-modal-desc">Ayam goreng renyah dengan kremes garing, nasi putih pulen, sayur asem segar &amp; sambal.</div>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-primary" style="flex:1" onclick="closeGallery();openCart()">📋 Pesan Sekarang</button>
+        <button class="btn btn-outline" onclick="galleryNav(1)">Berikutnya →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastMsg"></div>
+
+<!-- ════════════ JAVASCRIPT ════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const WA_NUMBER = '6282275625828';
+const pages = {home:'page-home',paket:'page-paket',menu:'page-menu',harga:'page-harga',addon:'page-addon'};
+const cart = { addons: {} };
+const addonData = [
+  {id:'Karbo',name:'Karbo (Nasi)',price:2000,emoji:'🍚',bg:'linear-gradient(135deg,#C8833A,#8B4513)',img:'https://i.pinimg.com/736x/6e/ff/db/6effdb4016deb806f3644f22510cad1d.jpg',desc:'Tambahan nasi putih atau nasi merah sesuai paket.'},
+  {id:'Lauk',name:'Lauk Tambahan',price:4500,emoji:'🍗',bg:'linear-gradient(135deg,#8B4513,#6B3A1F)',img:'https://i.pinimg.com/736x/2f/b3/de/2fb3de74c2ca41b17460aa1d494b1efc.jpg',desc:'Tambahan lauk sesuai menu hari itu (ayam, ikan, daging, dll.)'},
+  {id:'Sayur',name:'Sayur Tambahan',price:2500,emoji:'🥗',bg:'linear-gradient(135deg,#2D4A2D,#4A7A4A)',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80&auto=format&fit=crop',desc:'Sayur pilihan — tumis, rebus, atau lodeh sesuai menu.'},
+  {id:'Sambal',name:'Sambal Extra',price:1000,emoji:'🌶️',bg:'linear-gradient(135deg,#c0392b,#922b21)',img:'https://i.pinimg.com/1200x/4e/ee/b3/4eeeb3ab975e0e557bac32b8065d9176.jpg',desc:'Sambal merah atau sambal ijo, dikirim terpisah dalam wadah.'},
+  {id:'Kerupuk',name:'Kerupuk',price:1000,emoji:'🥔',bg:'linear-gradient(135deg,#d4a017,#a07010)',img:'https://i.pinimg.com/1200x/e5/4d/f8/e54df8e669cf87e873d96b15d6b5e74c.jpg',desc:'Kerupuk renyah sebagai pelengkap makan. Tambah kriuk-nya!'},
+  {id:'Buah',name:'Buah Potong Segar',price:2000,emoji:'🍉',bg:'linear-gradient(135deg,#1a3a1a,#2D5A2D)',img:'https://i.pinimg.com/736x/4d/b5/20/4db520672d666517f58953e0751db900.jpg',desc:'Buah potong musiman segar. Vitamin alami untuk melengkapi makan.'},
+];
+
+// ── MAP ──
+let leafletMap = null, mapMarker = null;
+let selectedLat = null, selectedLng = null, selectedAddr = '';
+
+function openMapModal(){
+  document.getElementById('mapModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    if(!leafletMap){
+      // Center on Yogyakarta
+      leafletMap = L.map('mapContainer').setView([-7.797068, 110.370529], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(leafletMap);
+      leafletMap.on('click', onMapClick);
+    } else {
+      leafletMap.invalidateSize();
+    }
+    // If location already picked, restore marker
+    if(selectedLat && selectedLng){
+      placeMarker(selectedLat, selectedLng, selectedAddr);
+    }
+  }, 120);
+}
+
+function closeMapModal(){
+  document.getElementById('mapModal').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('mapSearchResults').classList.remove('show');
+}
+
+function onMapClick(e){
+  const { lat, lng } = e.latlng;
+  reverseGeocode(lat, lng);
+}
+
+function placeMarker(lat, lng, addr){
+  if(mapMarker) leafletMap.removeLayer(mapMarker);
+  mapMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      html: '<div style="background:#C8833A;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>',
+      iconSize: [28, 28], iconAnchor: [14, 28], className: ''
+    })
+  }).addTo(leafletMap);
+  selectedLat = lat; selectedLng = lng; selectedAddr = addr;
+  const addrEl = document.getElementById('mapAddrText');
+  addrEl.style.fontStyle = 'normal';
+  addrEl.style.color = 'var(--espresso)';
+  addrEl.textContent = addr || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  const useBtn = document.getElementById('mapUseBtn');
+  useBtn.disabled = false;
+  useBtn.style.opacity = '1';
+  useBtn.style.cursor = 'pointer';
+}
+
+function reverseGeocode(lat, lng){
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=id`)
+    .then(r => r.json())
+    .then(data => {
+      const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      placeMarker(lat, lng, addr);
+    })
+    .catch(() => placeMarker(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`));
+}
+
+async function searchMapLocation(){
+  const q = document.getElementById('mapSearchInput').value.trim();
+  if(!q) return;
+  const resultsEl = document.getElementById('mapSearchResults');
+  resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Mencari...</div>';
+  resultsEl.classList.add('show');
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q+' Yogyakarta')}&limit=5&accept-language=id`);
+    const data = await r.json();
+    if(!data.length){
+      resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
+      return;
+    }
+    resultsEl.innerHTML = data.map((item,i) =>
+      `<div class="map-search-result-item" onclick="selectSearchResult(${item.lat},${item.lon},'${item.display_name.replace(/'/g,"\\'")}')">
+        📍 ${item.display_name}
+      </div>`
+    ).join('');
+  } catch(e) {
+    resultsEl.innerHTML = '<div class="map-search-result-item" style="color:#dc2626">Gagal mencari. Periksa koneksi internet.</div>';
+  }
+}
+
+function selectSearchResult(lat, lng, addr){
+  document.getElementById('mapSearchResults').classList.remove('show');
+  document.getElementById('mapSearchInput').value = '';
+  leafletMap.setView([lat, lng], 16);
+  placeMarker(parseFloat(lat), parseFloat(lng), addr);
+}
+
+function useSelectedLocation(){
+  if(!selectedLat || !selectedLng) return;
+  window.userLat = selectedLat;
+  window.userLng = selectedLng;
+  window.userAddr = selectedAddr;
+  // Update address textarea with short address
+  const addrField = document.getElementById('cfAlamat');
+  if(!addrField.value.trim()){
+    // Extract short address from full nominatim result
+    const parts = selectedAddr.split(',');
+    addrField.value = parts.slice(0,3).join(',').trim();
+  }
+  // Update UI
+  document.getElementById('btnPickLoc').classList.add('active');
+  document.getElementById('btnPickLoc').textContent = '✅ Lokasi Dipilih';
+  document.getElementById('btnRemoveLoc').classList.add('show');
+  document.getElementById('gpsStatus').textContent = '✅ Lokasi berhasil dipilih via peta';
+  closeMapModal();
+  showToast('📍 Lokasi berhasil dipilih!');
+}
+
+function removeLocation(){
+  window.userLat = null;
+  window.userLng = null;
+  window.userAddr = '';
+  selectedLat = null; selectedLng = null; selectedAddr = '';
+  if(mapMarker && leafletMap){ leafletMap.removeLayer(mapMarker); mapMarker = null; }
+  const useBtn = document.getElementById('mapUseBtn');
+  useBtn.disabled = true; useBtn.style.opacity = '.5'; useBtn.style.cursor = 'not-allowed';
+  document.getElementById('mapAddrText').textContent = 'Klik pada peta atau cari alamat untuk memilih lokasi';
+  document.getElementById('mapAddrText').style.fontStyle = 'italic';
+  document.getElementById('mapAddrText').style.color = 'var(--text-muted)';
+  document.getElementById('btnPickLoc').classList.remove('active');
+  document.getElementById('btnPickLoc').textContent = '📍 Pilih Lokasi di Peta (Opsional)';
+  document.getElementById('btnRemoveLoc').classList.remove('show');
+  document.getElementById('gpsStatus').textContent = '';
+  showToast('🗑️ Lokasi dihapus');
+}
+
+// Close search results on click outside
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.map-search-wrapper')) document.getElementById('mapSearchResults').classList.remove('show');
+});
+
+// ── ADDON RENDER ──
+function renderAddonCards(){
+  const grid = document.getElementById('kreasigrid');
+  if(!grid) return;
+  grid.innerHTML = addonData.map(a => {
+    const qty = cart.addons[a.id] ? cart.addons[a.id].qty : 0;
+    const hasQty = qty > 0;
+    return `<div class="kreasi-card reveal">
+      <div class="kreasi-img" style="background-image:url('${a.img}');background-size:cover;background-position:center"></div>
+      <div class="kreasi-body">
+        <h3>${a.name}</h3>
+        <p>${a.desc}</p>
+        <div class="kreasi-price">Rp ${a.price.toLocaleString('id-ID')} <span>/ porsi</span></div>
+        <div class="qty-control ${hasQty?'has-qty':''}" id="qc-${a.id}">
+          <button class="qty-btn minus" onclick="changeAddon('${a.id}',${a.price},-1)">−</button>
+          <span class="qty-num" id="qn-${a.id}">${qty}</span>
+          <button class="qty-btn" onclick="changeAddon('${a.id}',${a.price},1)">+</button>
+        </div>
+        ${hasQty ? `<div style="font-size:.78rem;color:var(--amber);font-weight:700;margin-top:6px">✅ ${qty} porsi — Rp ${(qty*a.price).toLocaleString('id-ID')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.kreasi-card').forEach(el => observer.observe(el));
+}
+
+function changeAddon(id, price, delta){
+  if(!cart.addons[id]) cart.addons[id] = {price, qty:0};
+  cart.addons[id].qty = Math.max(0, cart.addons[id].qty + delta);
+  if(cart.addons[id].qty === 0) delete cart.addons[id];
+  updateQtyDisplay(id, price);
+  updateCartBadge();
+  renderCartAddonSummary();
+  if(delta > 0) showToast(`➕ ${id} ditambahkan ke pesanan!`);
+}
+
+function updateQtyDisplay(id, price){
+  const qn = document.getElementById('qn-'+id);
+  const qc = document.getElementById('qc-'+id);
+  const qt = document.getElementById('qtot-'+id);
+  const qty = cart.addons[id] ? cart.addons[id].qty : 0;
+  if(qn) qn.textContent = qty;
+  if(qc) qc.classList.toggle('has-qty', qty > 0);
+  if(qt){ qt.textContent = qty>0?`${qty} porsi — Rp ${(qty*price).toLocaleString('id-ID')}`:''; qt.style.display=qty>0?'inline':'none'; }
+  if(document.getElementById('kreasigrid')) renderAddonCards();
+}
+
+function updateCartBadge(){
+  const total = Object.values(cart.addons).reduce((s,a)=>s+a.qty,0);
+  const badge = document.getElementById('cartFabBadge');
+  if(badge){ badge.textContent=total; badge.classList.toggle('show',total>0); }
+}
+
+function parsePriceFromPaketText(txt){
+  const m=(txt||'').match(/Rp\s*([\d.]+)/i);
+  if(!m) return 0;
+  return Number(m[1].replace(/\./g,''))||0;
+}
+
+function getOrangCount(){
+  const sel=document.getElementById('cfOrang');
+  const custom=document.getElementById('cfOrangCustom');
+  if(!sel) return 1;
+  if(sel.value!=='6+') return Number(sel.value)||1;
+  const v=Number(custom?.value||0);
+  return v>=6?v:0;
+}
+
+function getOrangText(){
+  const sel=document.getElementById('cfOrang');
+  if(!sel) return '-';
+  if(sel.value!=='6+') return `${sel.value} orang`;
+  const cnt=getOrangCount();
+  return cnt>=6?`${cnt} orang`:'6+ orang';
+}
+
+function calculateOrderTotals(){
+  const paketTxt=document.getElementById('cfPaket')?.value||'';
+  const paketPrice=parsePriceFromPaketText(paketTxt);
+  const orangCount=getOrangCount();
+  const addonTotal=Object.values(cart.addons).reduce((s,a)=>s+a.price*a.qty,0);
+  const paketSubtotal=paketPrice*(orangCount||0);
+  return {paketPrice,orangCount,paketSubtotal,addonTotal,grandTotal:paketSubtotal+addonTotal};
+}
+
+function handleOrangMode(){
+  const sel=document.getElementById('cfOrang');
+  const custom=document.getElementById('cfOrangCustom');
+  if(!sel||!custom) return;
+  const isCustom=sel.value==='6+';
+  custom.style.display=isCustom?'block':'none';
+  if(!isCustom) custom.value='';
+}
+
+function renderCartAddonSummary(){
+  const el=document.getElementById('cartAddonSummary');
+  const calcSummary=document.getElementById('cartCalcSummary');
+  const totalRow=document.getElementById('cartTotalRow');
+  const totalAmt=document.getElementById('cartTotalAmt');
+  const items=Object.entries(cart.addons);
+  const totals=calculateOrderTotals();
+  if(el) el.innerHTML=(items.length?`<div style="font-size:.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Add-on Tambahan</div>
+    <div class="cart-addon-list">`+items.map(([id,a])=>`
+    <div class="cart-addon-item">
+      <span class="ca-name">${id}</span>
+      <div class="ca-qty-ctrl">
+        <button class="mini-qty-btn minus-btn" onclick="changeAddon('${id}',${a.price},-1)">−</button>
+        <span style="min-width:20px;text-align:center;font-weight:700">${a.qty}</span>
+        <button class="mini-qty-btn" onclick="changeAddon('${id}',${a.price},1)">+</button>
+        <span class="ca-price">Rp ${(a.price*a.qty).toLocaleString('id-ID')}</span>
+      </div>
+    </div>`).join('')+`</div>`:'');
+  if(calcSummary){
+    calcSummary.style.display='block';
+    calcSummary.innerHTML=`Paket x Orang: <strong style="color:var(--espresso)">Rp ${totals.paketSubtotal.toLocaleString('id-ID')}</strong><br>Total Add-on: <strong style="color:var(--espresso)">Rp ${totals.addonTotal.toLocaleString('id-ID')}</strong>`;
+  }
+  if(totalRow) totalRow.style.display='flex';
+  if(totalAmt) totalAmt.textContent='Rp '+totals.grandTotal.toLocaleString('id-ID');
+}
+
+// ── ROUTING ──
+function navigateTo(k){
+  Object.values(pages).forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(pages[k]).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(a=>a.classList.toggle('active',a.dataset.page===k));
+  window.scrollTo({top:0,behavior:'smooth'});
+  history.pushState(null,'','#'+k);
+  triggerReveal();
+  if(k==='addon') setTimeout(()=>renderAddonCards(),50);
+}
+document.querySelectorAll('.nav-link').forEach(link=>{
+  link.addEventListener('click',function(e){e.preventDefault();const p=this.dataset.page;if(p)navigateTo(p)});
+});
+window.addEventListener('load',()=>{
+  const h=location.hash.replace('#','');
+  if(h&&pages[h]) navigateTo(h); else navigateTo('home');
+  renderAddonCards();
+  handleOrangMode();
+  ['cfPaket','cfOrang','cfOrangCustom'].forEach(id=>{
+    const node=document.getElementById(id);
+    if(!node) return;
+    node.addEventListener('change',()=>{if(id==='cfOrang')handleOrangMode();renderCartAddonSummary();});
+    if(id==='cfOrangCustom') node.addEventListener('input',renderCartAddonSummary);
+  });
+});
+
+// ── MOBILE MENU ──
+let mobileOpen=false;
+function toggleMobileMenu(){
+  mobileOpen=!mobileOpen;
+  document.getElementById('mobileMenu').classList.toggle('open',mobileOpen);
+  document.body.classList.toggle('menu-open',mobileOpen);
+  document.body.style.overflow=mobileOpen?'hidden':'';
+}
+
+// ── SCROLL ──
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>20);
+  document.getElementById('scrollTop').classList.toggle('visible',window.scrollY>400);
+});
+
+// ── MENU FILTER ──
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    const f=this.dataset.filter;
+    document.querySelectorAll('.menu-type-section').forEach(s=>{s.style.display=(f==='all'||s.dataset.cat===f)?'block':'none';});
+  });
+});
+
+// ── CART PANEL ──
+function openCart(){
+  handleOrangMode(); renderCartAddonSummary();
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartPanel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCart(){
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartPanel').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function selectPaket(val){
+  openCart();
+  const sel=document.getElementById('cfPaket');
+  if(!sel) return;
+  for(let opt of sel.options){ if(opt.text.includes(val.split('—')[0].trim())||opt.value===val){opt.selected=true;break;} }
+  renderCartAddonSummary();
+  showToast('✅ Paket dipilih! Lengkapi form pesanan.');
+}
+
+// ── SUBMIT ──
+function submitOrder(){
+  const nama=document.getElementById('cfNama').value.trim();
+  const wa=document.getElementById('cfWA').value.trim();
+  const alamat=document.getElementById('cfAlamat').value.trim();
+  const paket=document.getElementById('cfPaket').value;
+  const sesi=document.getElementById('cfSesi').value;
+  const orang=getOrangText();
+  const kemasan=document.getElementById('cfKemasan').value;
+  const tanggal=document.getElementById('cfTanggal').value;
+  const catatan=document.getElementById('cfCatatan').value.trim();
+  const askDiscount=document.getElementById('cfAskDiscount')?.checked;
+  if(!nama||!wa||!alamat||!paket||!tanggal){alert('⚠️ Mohon lengkapi semua data termasuk alamat');return;}
+  if(document.getElementById('cfOrang').value==='6+'&&getOrangCount()<6){alert('⚠️ Minimal 6 orang untuk pilihan 6+');return;}
+  const dateStr=new Date(tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const totals=calculateOrderTotals();
+  const addonItems=Object.entries(cart.addons);
+  let addonText='';
+  if(addonItems.length) addonText='\nAdd-on:\n'+addonItems.map(([id,a])=>`- ${id} x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}`).join('\n');
+  const discountText=askDiscount?'\nMohon info promo/diskon jika tersedia.':'';
+  const catatanText=catatan?`\nCatatan: ${catatan}`:'';
+  let mapsLink='-';
+  if(window.userLat&&window.userLng) mapsLink=`https://www.google.com/maps?q=${window.userLat},${window.userLng}`;
+  else if(alamat) mapsLink=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(alamat)}`;
+  const msg=`*Halo Daily Catering Jogja*\n\nSaya ingin melakukan pemesanan:\n\n*DATA*\nNama: ${nama}\nWA: ${wa}\n\n*PESANAN*\nPaket: ${paket}\nSesi: ${sesi}\nJumlah: ${orang} pax\nKemasan: ${kemasan}\nTanggal: ${dateStr}${addonText}\n\n*TOTAL*\nPaket: Rp ${totals.paketSubtotal.toLocaleString('id-ID')}\nAdd-on: Rp ${totals.addonTotal.toLocaleString('id-ID')}\nTotal: Rp ${totals.grandTotal.toLocaleString('id-ID')}${discountText}${catatanText}\n\n*ALAMAT PENGIRIMAN*\n${alamat}\n\n*Lokasi Peta:* ${mapsLink}\n\nMohon konfirmasi ketersediaan dan informasi pembayaran. Terima kasih!`;
+  let phone=WA_NUMBER.replace(/\D/g,'');
+  if(phone.startsWith('0')) phone='62'+phone.slice(1);
+  if(!phone.startsWith('62')) phone='62'+phone;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  closeCart();
+  cart.addons={};
+  updateCartBadge();
+  renderCartAddonSummary();
+  renderAddonCards();
+}
+
+// ── GALLERY ──
+const foodGallery=[
+  {emoji:'🍛',name:'Nasi Ayam Goreng Kremes',cat:'Reguler',desc:'Ayam goreng renyah dengan kremes garing, nasi putih pulen, sayur asem segar & sambal.',color:'linear-gradient(135deg,#8B4513,#C8833A)',img:'https://i.pinimg.com/736x/ed/8a/15/ed8a157c3b3a09e36d35bd0e98ba9d38.jpg',floats:['✨','🔥','👌']},
+  {emoji:'🥘',name:'Nasi Bigsize Lengkap',cat:'Bigsize',desc:'Porsi jumbo! 2 lauk utama pilihan, nasi putih, 2 sayur — kenyang sepanjang hari.',color:'linear-gradient(135deg,#2D4A2D,#4A7A4A)',img:'https://i.pinimg.com/1200x/14/88/57/1488573b589df1451c69f003ca48fcdb.jpg',floats:['💪','🍽️','😋']},
+  {emoji:'🥗',name:'Paket Diet Sehat',cat:'Diet',desc:'Nasi merah, protein lean rebus, sayur segar rebus. Rendah kalori, tetap nikmat.',color:'linear-gradient(135deg,#1E3A1E,#2D5A2D)',img:'https://i.pinimg.com/736x/32/7d/e5/327de50b97138d35c4f323f60006f82e.jpg',floats:['🥦','💚','✅']},
+  {emoji:'🍱',name:'Fampack Keluarga',cat:'Fampack',desc:'Satu box besar berisi nasi + 2 lauk + 2 sayur untuk dinikmati bersama keluarga.',color:'linear-gradient(135deg,#6B3A1F,#C8833A)',img:'https://i.pinimg.com/1200x/8f/53/bf/8f53bf58d1d2935bf50381bd20189413.jpg',floats:['👨‍👩‍👧‍👦','❤️','🏠']},
+  {emoji:'🌱',name:'Freshealthy Premium',cat:'Freshealthy',desc:'Nasi merah organik + protein pilihan + sayur organik segar. Plus bonus jus Freshence!',color:'linear-gradient(135deg,#0D200D,#1E3A1E)',img:'https://i.pinimg.com/736x/0f/55/71/0f5571d580344330254a967c2c734033.jpg',floats:['🌿','⭐','🥤']},
+  {emoji:'🥙',name:'Funhealthy Seimbang',cat:'Funhealthy',desc:'Menu sehat yang tetap lezat. Ayam bumbu rempah + sayur tumis + buah potong segar.',color:'linear-gradient(135deg,#223A1A,#3A5A2D)',img:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80&auto=format&fit=crop',floats:['🏃','💪','🍎']},
+  {emoji:'🍜',name:'Funsize Hemat',cat:'Funsize',desc:'Porsi pas, harga ramah di kantong. Lauk + nasi + sayur dalam kemasan praktis.',color:'linear-gradient(135deg,#3D2010,#6B3A1F)',img:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&q=80&auto=format&fit=crop',floats:['😄','💛','👍']},
+  {emoji:'🐔',name:'Ayam Bakar Kecap',cat:'Menu Andalan',desc:'Ayam bakar empuk dengan bumbu kecap manis khas Jogja, disajikan dengan lalapan segar.',color:'linear-gradient(135deg,#C87040,#E8A85A)',img:'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80&auto=format&fit=crop',floats:['🔥','😍','🤤']},
+  {emoji:'🥬',name:'Paket Diet Salmon',cat:'Freshealthy',desc:'Ikan salmon kukus dengan salad sayur organik segar. Tinggi omega-3 & protein.',color:'linear-gradient(135deg,#1A2E1A,#2D4A2D)',img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80&auto=format&fit=crop',floats:['🐟','💚','🌟']},
+];
+let currentGalleryIdx=0;
+function openGallery(idx){currentGalleryIdx=idx;renderGalleryModal(idx);document.getElementById('galleryModal').classList.add('open');document.body.style.overflow='hidden';}
+function closeGallery(){document.getElementById('galleryModal').classList.remove('open');document.body.style.overflow='';}
+function galleryNav(dir){currentGalleryIdx=(currentGalleryIdx+dir+foodGallery.length)%foodGallery.length;renderGalleryModal(currentGalleryIdx);}
+function renderGalleryModal(idx){
+  const item=foodGallery[idx];
+  const modal=document.getElementById('galleryModal');
+  modal.querySelector('.gallery-modal-img').style.backgroundImage=`url('${item.img}')`;
+  modal.querySelector('.gallery-modal-img').style.backgroundSize='cover';
+  modal.querySelector('.gallery-modal-img').style.backgroundPosition='center';
+  modal.querySelector('.gallery-modal-emoji').textContent=item.emoji;
+  modal.querySelector('.gallery-modal-cat').textContent=item.cat;
+  modal.querySelector('.gallery-modal-name').textContent=item.name;
+  modal.querySelector('.gallery-modal-desc').textContent=item.desc;
+  modal.querySelector('.gallery-floats').innerHTML=item.floats.map((f,i)=>`<span class="gfloat" style="animation-delay:${i*.4}s">${f}</span>`).join('');
+  modal.querySelector('.gallery-counter').textContent=(idx+1)+' / '+foodGallery.length;
+}
+document.getElementById('galleryModal').addEventListener('click',function(e){if(e.target===this)closeGallery();});
+document.getElementById('mapModal').addEventListener('click',function(e){if(e.target===this)closeMapModal();});
+
+// ── TOAST ──
+function showToast(msg){
+  const t=document.getElementById('toastMsg');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── REVEAL ──
+function triggerReveal(){
+  setTimeout(()=>{
+    document.querySelectorAll('.reveal').forEach((el,i)=>{
+      el.style.transitionDelay=(i*.06)+'s';
+      el.classList.add('visible');
+    });
+  },100);
+}
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}});
+},{threshold:.1});
+function initReveal(){document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));}
+window.addEventListener('load',()=>{initReveal();triggerReveal();});
+</script>
+</body>
+</html>
