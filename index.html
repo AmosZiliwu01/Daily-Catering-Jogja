@@ -568,6 +568,13 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
   background: var(--amber-pale);
   transform: translateY(-1px);
 }
+
+/* ── VARIANT SIZE BADGE DI CART (jus) ── */
+.jus-size-badge {
+  background: #fff8e1; color: #b45309;
+  padding: 1px 6px; border-radius: 100px;
+  font-size: .7rem; font-weight: 700;
+}
 </style>
 </head>
 <body>
@@ -1259,7 +1266,11 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
             <p>Jus buah segar berbagai pilihan rasa. Ukuran besar, menyegarkan!</p>
             <div class="jus-price">Rp 12.000 <span>/ 250 ml</span></div>
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-              <div class="qty-control" id="qc-jus250"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 250ml',12000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 250ml">0</span><button class="qty-btn" onclick="openJusPopup('Jus Freshence 250ml',12000)">+</button></div>
+              <div class="qty-control" id="qc-Jus Freshence 250ml">
+                <button class="qty-btn minus" onclick="openJusRemovePopup('Jus Freshence 250ml')">−</button>
+                <span class="qty-num" id="qn-Jus Freshence 250ml">0</span>
+                <button class="qty-btn" onclick="openJusPopup('Jus Freshence 250ml',12000)">+</button>
+              </div>
               <span id="qtot-Jus Freshence 250ml" style="font-size:.82rem;color:var(--amber);font-weight:700;display:none"></span>
             </div>
           </div>
@@ -1274,7 +1285,11 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
             <p>Ukuran mini praktis, menyegarkan untuk menemani makan siangmu.</p>
             <div class="jus-price">Rp 6.000 <span>/ 100 ml</span></div>
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-              <div class="qty-control" id="qc-jus100"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 100ml',6000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 100ml">0</span><button class="qty-btn" onclick="openJusPopup('Jus Freshence 100ml',6000)">+</button></div>
+              <div class="qty-control" id="qc-Jus Freshence 100ml">
+                <button class="qty-btn minus" onclick="openJusRemovePopup('Jus Freshence 100ml')">−</button>
+                <span class="qty-num" id="qn-Jus Freshence 100ml">0</span>
+                <button class="qty-btn" onclick="openJusPopup('Jus Freshence 100ml',6000)">+</button>
+              </div>
               <span id="qtot-Jus Freshence 100ml" style="font-size:.82rem;color:var(--amber);font-weight:700;display:none"></span>
             </div>
           </div>
@@ -1656,58 +1671,87 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
   </div>
 </div>
 
+<!-- Modal Kurangi Varian (sambal & jus) -->
+<div id="reduceVariantPopup" style="display:none;position:fixed;inset:0;z-index:4000;align-items:center;justify-content:center;padding:16px">
+  <div onclick="closeReduceVariantPopup()" style="position:absolute;inset:0;background:rgba(30,18,8,.5);backdrop-filter:blur(4px)"></div>
+  <div style="position:relative;background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:fadeUp .25s ease;text-align:center">
+    <div style="font-size:2rem;margin-bottom:8px" id="reduceVariantIcon">🗑️</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--espresso);margin-bottom:6px">Kurangi Porsi</h3>
+    <p id="reduceVariantSubtitle" style="font-size:.82rem;color:var(--text-muted);margin-bottom:20px">Pilih yang ingin dikurangi</p>
+    <div id="reduceVariantBtns" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button onclick="closeReduceVariantPopup()" style="margin-top:16px;width:100%;padding:10px;border-radius:10px;border:none;background:var(--cream-dark);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;color:var(--text-muted);cursor:pointer">
+      Batal
+    </button>
+  </div>
+</div>
+
 <!-- ════════════ JAVASCRIPT ════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const WA_NUMBER = '6282275625828';
-const pages = {home:'page-home',paket:'page-paket',menu:'page-menu',harga:'page-harga',addon:'page-addon'};
-const cart = { addons: {} };
+const pages = {
+  home: 'page-home', paket: 'page-paket', menu: 'page-menu',
+  harga: 'page-harga', addon: 'page-addon'
+};
+
+// ═══ CART STATE ═══════════════════════════════════════════════════
+const cart = {
+  addons: {},          // { id: { price, qty } }
+  sambalVariants: {},  // { 'Sambal Merah': 2, 'Sambal Ijo': 1 }
+  jusVariants: {}      // { 'Jus Freshence 250ml': { 'Alpukat': 1, 'Mangga': 2 } }
+};
+
+// ═══ ADDON DATA ═══════════════════════════════════════════════════
 const addonData = [
-  {id:'Karbo',name:'Karbo (Nasi)',price:2000,emoji:'🍚',bg:'linear-gradient(135deg,#C8833A,#8B4513)',img:'https://i.pinimg.com/736x/6e/ff/db/6effdb4016deb806f3644f22510cad1d.jpg',desc:'Tambahan nasi putih atau nasi merah sesuai paket.'},
-  {id:'Lauk',name:'Lauk Tambahan',price:4500,emoji:'🍗',bg:'linear-gradient(135deg,#8B4513,#6B3A1F)',img:'https://i.pinimg.com/736x/2f/b3/de/2fb3de74c2ca41b17460aa1d494b1efc.jpg',desc:'Tambahan lauk sesuai menu hari itu (ayam, ikan, daging, dll.)'},
-  {id:'Sayur',name:'Sayur Tambahan',price:2500,emoji:'🥗',bg:'linear-gradient(135deg,#2D4A2D,#4A7A4A)',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80&auto=format&fit=crop',desc:'Sayur pilihan — tumis, rebus, atau lodeh sesuai menu.'},
-  {id:'Sambal',name:'Sambal Extra',price:1000,emoji:'🌶️',bg:'linear-gradient(135deg,#c0392b,#922b21)',img:'https://i.pinimg.com/1200x/4e/ee/b3/4eeeb3ab975e0e557bac32b8065d9176.jpg',desc:'Sambal merah atau sambal ijo, dikirim terpisah dalam wadah.',  variants:['Sambal Merah','Sambal Ijo']},
-  {id:'Kerupuk',name:'Kerupuk',price:1000,emoji:'🥔',bg:'linear-gradient(135deg,#d4a017,#a07010)',img:'https://i.pinimg.com/1200x/e5/4d/f8/e54df8e669cf87e873d96b15d6b5e74c.jpg',desc:'Kerupuk renyah sebagai pelengkap makan. Tambah kriuk-nya!'},
-  {id:'Buah',name:'Buah Potong Segar',price:2000,emoji:'🍉',bg:'linear-gradient(135deg,#1a3a1a,#2D5A2D)',img:'https://i.pinimg.com/736x/4d/b5/20/4db520672d666517f58953e0751db900.jpg',desc:'Buah potong musiman segar. Vitamin alami untuk melengkapi makan.'},
+  { id:'Karbo',   name:'Karbo (Nasi)',      price:2000, emoji:'🍚',
+    img:'https://i.pinimg.com/736x/6e/ff/db/6effdb4016deb806f3644f22510cad1d.jpg',
+    desc:'Tambahan nasi putih atau nasi merah sesuai paket.' },
+  { id:'Lauk',    name:'Lauk Tambahan',     price:4500, emoji:'🍗',
+    img:'https://i.pinimg.com/736x/2f/b3/de/2fb3de74c2ca41b17460aa1d494b1efc.jpg',
+    desc:'Tambahan lauk sesuai menu hari itu (ayam, ikan, daging, dll.)' },
+  { id:'Sayur',   name:'Sayur Tambahan',    price:2500, emoji:'🥗',
+    img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80&auto=format&fit=crop',
+    desc:'Sayur pilihan — tumis, rebus, atau lodeh sesuai menu.' },
+  { id:'Sambal',  name:'Sambal Extra',      price:1000, emoji:'🌶️',
+    img:'https://i.pinimg.com/1200x/4e/ee/b3/4eeeb3ab975e0e557bac32b8065d9176.jpg',
+    desc:'Sambal merah atau sambal ijo, dikirim terpisah dalam wadah.', hasVariants: true },
+  { id:'Kerupuk', name:'Kerupuk',           price:1000, emoji:'🥔',
+    img:'https://i.pinimg.com/1200x/e5/4d/f8/e54df8e669cf87e873d96b15d6b5e74c.jpg',
+    desc:'Kerupuk renyah sebagai pelengkap makan. Tambah kriuk-nya!' },
+  { id:'Buah',    name:'Buah Potong Segar', price:2000, emoji:'🍉',
+    img:'https://i.pinimg.com/736x/4d/b5/20/4db520672d666517f58953e0751db900.jpg',
+    desc:'Buah potong musiman segar. Vitamin alami untuk melengkapi makan.' },
 ];
 
-// ── MAP ──
+// ═══ MAP ══════════════════════════════════════════════════════════
 let leafletMap = null, mapMarker = null;
 let selectedLat = null, selectedLng = null, selectedAddr = '';
 
-function openMapModal(){
+function openMapModal() {
   document.getElementById('mapModal').classList.add('open');
   document.body.style.overflow = 'hidden';
   setTimeout(() => {
-    if(!leafletMap){
+    if (!leafletMap) {
       leafletMap = L.map('mapContainer').setView([-7.797068, 110.370529], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
       }).addTo(leafletMap);
-      leafletMap.on('click', onMapClick);
+      leafletMap.on('click', e => reverseGeocode(e.latlng.lat, e.latlng.lng));
     } else {
       leafletMap.invalidateSize();
     }
-    if(selectedLat && selectedLng){
-      placeMarker(selectedLat, selectedLng, selectedAddr);
-    }
+    if (selectedLat && selectedLng) placeMarker(selectedLat, selectedLng, selectedAddr);
   }, 120);
 }
 
-function closeMapModal(){
+function closeMapModal() {
   document.getElementById('mapModal').classList.remove('open');
   document.body.style.overflow = '';
   document.getElementById('mapSearchResults').classList.remove('show');
 }
 
-function onMapClick(e){
-  const { lat, lng } = e.latlng;
-  reverseGeocode(lat, lng);
-}
-
-function placeMarker(lat, lng, addr){
-  if(mapMarker) leafletMap.removeLayer(mapMarker);
+function placeMarker(lat, lng, addr) {
+  if (mapMarker) leafletMap.removeLayer(mapMarker);
   mapMarker = L.marker([lat, lng], {
     icon: L.divIcon({
       html: '<div style="background:#C8833A;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>',
@@ -1720,25 +1764,20 @@ function placeMarker(lat, lng, addr){
   addrEl.style.color = 'var(--espresso)';
   addrEl.textContent = addr || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
   const useBtn = document.getElementById('mapUseBtn');
-  useBtn.disabled = false;
-  useBtn.style.opacity = '1';
-  useBtn.style.cursor = 'pointer';
+  useBtn.disabled = false; useBtn.style.opacity = '1'; useBtn.style.cursor = 'pointer';
 }
 
-function reverseGeocode(lat, lng){
+function reverseGeocode(lat, lng) {
   fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=id`)
     .then(r => r.json())
-    .then(data => {
-      const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      placeMarker(lat, lng, addr);
-    })
+    .then(d => placeMarker(lat, lng, d.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`))
     .catch(() => placeMarker(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`));
 }
 
 let _searchTimeout = null;
-async function searchMapLocation(){
+async function searchMapLocation() {
   const q = document.getElementById('mapSearchInput').value.trim();
-  if(!q || q.length < 3) return;
+  if (!q || q.length < 3) return;
   clearTimeout(_searchTimeout);
   _searchTimeout = setTimeout(async () => {
     const resultsEl = document.getElementById('mapSearchResults');
@@ -1747,57 +1786,41 @@ async function searchMapLocation(){
     try {
       const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q+' Yogyakarta')}&limit=5&accept-language=id`);
       const data = await r.json();
-      if(!data.length){
-        resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Lokasi tidak ditemukan.</div>';
-        return;
-      }
+      if (!data.length) { resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Lokasi tidak ditemukan.</div>'; return; }
       resultsEl.innerHTML = data.map(item =>
-        `<div class="map-search-result-item" onclick="selectSearchResult(${item.lat},${item.lon},'${item.display_name.replace(/'/g,"\\'")}')">
-          📍 ${item.display_name}
-        </div>`
+        `<div class="map-search-result-item" onclick="selectSearchResult(${item.lat},${item.lon},'${item.display_name.replace(/'/g,"\\'")}')">📍 ${item.display_name}</div>`
       ).join('');
-    } catch(e) {
-      resultsEl.innerHTML = '<div class="map-search-result-item" style="color:#dc2626">Gagal mencari. Cek koneksi internet.</div>';
+    } catch {
+      resultsEl.innerHTML = '<div class="map-search-result-item" style="color:#dc2626">Gagal mencari. Cek koneksi.</div>';
     }
   }, 400);
 }
 
-function selectSearchResult(lat, lng, addr){
+function selectSearchResult(lat, lng, addr) {
   document.getElementById('mapSearchResults').classList.remove('show');
   document.getElementById('mapSearchInput').value = '';
   leafletMap.setView([lat, lng], 16);
   placeMarker(parseFloat(lat), parseFloat(lng), addr);
 }
 
-function useSelectedLocation(){
-  if(!selectedLat || !selectedLng) return;
-  window.userLat = selectedLat;
-  window.userLng = selectedLng;
-  window.userAddr = selectedAddr;
+function useSelectedLocation() {
+  if (!selectedLat || !selectedLng) return;
+  window.userLat = selectedLat; window.userLng = selectedLng; window.userAddr = selectedAddr;
   const addrField = document.getElementById('cfAlamat');
-  if(!addrField.value.trim()){
-    const parts = selectedAddr.split(',');
-    addrField.value = parts.slice(0,3).join(',').trim();
-  }
+  if (!addrField.value.trim()) addrField.value = selectedAddr.split(',').slice(0, 3).join(',').trim();
   document.getElementById('btnPickLoc').classList.add('active');
   document.getElementById('btnPickLoc').innerHTML = '✅ Lokasi Dipilih <span style="color:#e74c3c;font-size:.7rem">(Wajib)</span>';
   document.getElementById('btnRemoveLoc').classList.add('show');
   document.getElementById('gpsStatus').textContent = '✅ Lokasi berhasil dipilih via peta';
-
-  // Hapus error state jika ada
-  clearFieldError('cfAlamat');
-  clearLocError();
-
+  clearFieldError('cfAlamat'); clearLocError();
   closeMapModal();
   showToast('📍 Lokasi berhasil dipilih!');
 }
 
-function removeLocation(){
-  window.userLat = null;
-  window.userLng = null;
-  window.userAddr = '';
+function removeLocation() {
+  window.userLat = null; window.userLng = null; window.userAddr = '';
   selectedLat = null; selectedLng = null; selectedAddr = '';
-  if(mapMarker && leafletMap){ leafletMap.removeLayer(mapMarker); mapMarker = null; }
+  if (mapMarker && leafletMap) { leafletMap.removeLayer(mapMarker); mapMarker = null; }
   const useBtn = document.getElementById('mapUseBtn');
   useBtn.disabled = true; useBtn.style.opacity = '.5'; useBtn.style.cursor = 'not-allowed';
   document.getElementById('mapAddrText').textContent = 'Klik pada peta atau cari alamat untuk memilih lokasi';
@@ -1810,371 +1833,504 @@ function removeLocation(){
   showToast('🗑️ Lokasi dihapus');
 }
 
-document.addEventListener('click', function(e){
-  if(!e.target.closest('.map-search-wrapper')) document.getElementById('mapSearchResults').classList.remove('show');
+document.addEventListener('click', e => {
+  if (!e.target.closest('.map-search-wrapper')) document.getElementById('mapSearchResults').classList.remove('show');
 });
 
-// ── VALIDASI HELPER ──
-function setFieldError(id, msg){
+// ═══ VALIDASI HELPER ══════════════════════════════════════════════
+function setFieldError(id, msg) {
   const el = document.getElementById(id);
-  if(!el) return;
+  if (!el) return;
   el.classList.add('field-error');
-  // hapus pesan lama jika ada
-  const existing = el.parentNode.querySelector('.field-error-msg');
-  if(existing) existing.remove();
+  el.parentNode.querySelector('.field-error-msg')?.remove();
   const span = document.createElement('span');
-  span.className = 'field-error-msg';
-  span.textContent = msg;
+  span.className = 'field-error-msg'; span.textContent = msg;
   el.parentNode.insertBefore(span, el.nextSibling);
 }
-
-function clearFieldError(id){
+function clearFieldError(id) {
   const el = document.getElementById(id);
-  if(!el) return;
+  if (!el) return;
   el.classList.remove('field-error');
-  const msg = el.parentNode.querySelector('.field-error-msg');
-  if(msg) msg.remove();
+  el.parentNode.querySelector('.field-error-msg')?.remove();
 }
-
-function setLocError(msg){
-  const btn = document.getElementById('btnPickLoc');
-  if(!btn) return;
+function setLocError(msg) {
   clearLocError();
   const span = document.createElement('span');
-  span.className = 'field-error-msg loc-error-msg';
-  span.textContent = msg;
-  btn.parentNode.insertBefore(span, btn.parentNode.querySelector('#gpsStatus'));
+  span.className = 'field-error-msg loc-error-msg'; span.textContent = msg;
+  const btn = document.getElementById('btnPickLoc');
+  if (btn) btn.parentNode.insertBefore(span, btn.parentNode.querySelector('#gpsStatus'));
 }
+function clearLocError() { document.querySelector('.loc-error-msg')?.remove(); }
 
-function clearLocError(){
-  const existing = document.querySelector('.loc-error-msg');
-  if(existing) existing.remove();
-}
-
-// ── ADDON RENDER ──
-function renderAddonCards(){
+// ═══ ADDON CARDS RENDER ═══════════════════════════════════════════
+function renderAddonCards() {
   const grid = document.getElementById('kreasigrid');
-  if(!grid) return;
+  if (!grid) return;
+
   grid.innerHTML = addonData.map(a => {
-    const qty = cart.addons[a.id] ? cart.addons[a.id].qty : 0;
+    const qty    = cart.addons[a.id]?.qty ?? 0;
     const hasQty = qty > 0;
-    return `<div class="kreasi-card reveal">
-      <div class="kreasi-img" style="background-image:url('${a.img}');background-size:cover;background-position:center"></div>
-      <div class="kreasi-body">
-        <h3>${a.name}</h3>
-        <p>${a.desc}</p>
-        <div class="kreasi-price">Rp ${a.price.toLocaleString('id-ID')} <span>/ porsi</span></div>
-        <div class="qty-control ${hasQty?'has-qty':''}" id="qc-${a.id}">
-          <button class="qty-btn minus" onclick="changeAddon('${a.id}',${a.price},-1)">−</button>
-          <span class="qty-num" id="qn-${a.id}">${qty}</span>
-          <button class="qty-btn" onclick="${a.variants ? `openSambalPopup(1)` : `changeAddon('${a.id}',${a.price},1)`}">+</button>
+
+    // Sambal: kontrol +/- standar, popup kurangi varian saat tekan −
+    if (a.hasVariants) {
+      const summary = Object.entries(cart.sambalVariants)
+        .filter(([,q]) => q > 0)
+        .map(([v, q]) => `${v === 'Sambal Merah' ? '🔴' : '🟢'} ${v} ×${q}`)
+        .join('  ');
+      return `
+        <div class="kreasi-card reveal">
+          <div class="kreasi-img" style="background-image:url('${a.img}');background-size:cover;background-position:center"></div>
+          <div class="kreasi-body">
+            <h3>${a.name}</h3>
+            <p>${a.desc}</p>
+            <div class="kreasi-price">Rp ${a.price.toLocaleString('id-ID')} <span>/ porsi</span></div>
+            <div class="qty-control ${hasQty ? 'has-qty' : ''}" id="qc-Sambal">
+              <button class="qty-btn minus" onclick="openSambalRemovePopup()">−</button>
+              <span class="qty-num" id="qn-Sambal">${qty}</span>
+              <button class="qty-btn" onclick="openSambalPopup()">+</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Item biasa: +/- button
+    return `
+      <div class="kreasi-card reveal">
+        <div class="kreasi-img" style="background-image:url('${a.img}');background-size:cover;background-position:center"></div>
+        <div class="kreasi-body">
+          <h3>${a.name}</h3>
+          <p>${a.desc}</p>
+          <div class="kreasi-price">Rp ${a.price.toLocaleString('id-ID')} <span>/ porsi</span></div>
+          <div class="qty-control ${hasQty ? 'has-qty' : ''}" id="qc-${a.id}">
+            <button class="qty-btn minus" onclick="changeRegularAddon('${a.id}',${a.price},-1)">−</button>
+            <span class="qty-num" id="qn-${a.id}">${qty}</span>
+            <button class="qty-btn" onclick="changeRegularAddon('${a.id}',${a.price},1)">+</button>
+          </div>
+          ${hasQty ? `<div style="font-size:.78rem;color:var(--amber);font-weight:700;margin-top:6px">
+            ✅ ${qty} porsi — Rp ${(qty * a.price).toLocaleString('id-ID')}
+          </div>` : ''}
         </div>
-        ${hasQty ? `<div style="font-size:.78rem;color:var(--amber);font-weight:700;margin-top:6px">✅ ${qty} porsi — Rp ${(qty*a.price).toLocaleString('id-ID')}</div>` : ''}
-      </div>
-    </div>`;
+      </div>`;
   }).join('');
+
   document.querySelectorAll('.kreasi-card').forEach(el => observer.observe(el));
 }
 
-function changeAddon(id, price, delta){
-  if(!cart.addons[id]) cart.addons[id] = {price, qty:0};
+// ═══ REGULAR ADDON (Karbo, Lauk, Sayur, Kerupuk, Buah) ════════════
+function changeRegularAddon(id, price, delta) {
+  if (!cart.addons[id]) cart.addons[id] = { price, qty: 0 };
   cart.addons[id].qty = Math.max(0, cart.addons[id].qty + delta);
-  if(cart.addons[id].qty === 0) delete cart.addons[id];
-  updateQtyDisplay(id, price);
+
+  // Auto-hapus jika qty = 0
+  if (cart.addons[id].qty === 0) delete cart.addons[id];
+
+  syncAddonDisplay(id, price);
   updateCartBadge();
   renderCartAddonSummary();
-  if(delta > 0) showToast(`➕ ${id} ditambahkan ke pesanan!`);
+  if (delta > 0) showToast(`➕ ${id} ditambahkan!`);
 }
 
-// ── SAMBAL VARIANT POPUP ──
-let _sambalPendingDelta = 1;
-
-function openSambalPopup(delta){
-  _sambalPendingDelta = delta;
-  const popup = document.getElementById('sambalPopup');
-  popup.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeSambalPopup(){
-  document.getElementById('sambalPopup').style.display = 'none';
+// ═══ REDUCE VARIANT POPUP (sambal & jus) ══════════════════════════
+function closeReduceVariantPopup() {
+  document.getElementById('reduceVariantPopup').style.display = 'none';
   document.body.style.overflow = '';
 }
 
-function confirmSambal(variant){
-  closeSambalPopup();
-  // Simpan qty per varian
-  if(!cart.sambalVariants) cart.sambalVariants = {};
-  if(_sambalPendingDelta > 0){
-    cart.sambalVariants[variant] = (cart.sambalVariants[variant] || 0) + 1;
+function openSambalRemovePopup() {
+  const entries = Object.entries(cart.sambalVariants).filter(([,q]) => q > 0);
+  if (!entries.length) return;
+
+  // Jika hanya satu varian dengan qty=1, langsung kurangi tanpa popup
+  if (entries.length === 1 && entries[0][1] === 1) {
+    reduceSambalVariant(entries[0][0]);
+    return;
   }
-  // Tetap update total qty Sambal di cart.addons
-  changeAddon('Sambal', 1000, _sambalPendingDelta);
+
+  document.getElementById('reduceVariantIcon').textContent = '🌶️';
+  document.getElementById('reduceVariantSubtitle').textContent = 'Pilih sambal yang ingin dikurangi 1 porsi';
+  document.getElementById('reduceVariantBtns').innerHTML = entries.map(([v, q]) => {
+    const isRed = v === 'Sambal Merah';
+    return `<button onclick="reduceSambalVariant('${v}');closeReduceVariantPopup()"
+      style="padding:13px;border-radius:12px;border:2px solid var(--cream-dark);background:var(--cream);
+        font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;color:var(--espresso);
+        cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px;text-align:left"
+      onmouseover="this.style.borderColor='#e74c3c';this.style.background='#fff5f5'"
+      onmouseout="this.style.borderColor='var(--cream-dark)';this.style.background='var(--cream)'">
+      <span style="font-size:1.2rem">${isRed ? '🔴' : '🟢'}</span>
+      <span style="flex:1">${v}</span>
+      <span style="background:${isRed ? '#fee2e2' : '#dcfce7'};color:${isRed ? '#dc2626' : '#16a34a'};
+        padding:2px 9px;border-radius:100px;font-size:.75rem;font-weight:700">×${q}</span>
+    </button>`;
+  }).join('');
+  document.getElementById('reduceVariantPopup').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function openJusRemovePopup(jusId) {
+  const variants = cart.jusVariants[jusId] || {};
+  const entries = Object.entries(variants).filter(([,q]) => q > 0);
+  if (!entries.length) return;
+
+  // Jika hanya satu rasa dengan qty=1, langsung kurangi tanpa popup
+  if (entries.length === 1 && entries[0][1] === 1) {
+    reduceJusVariant(jusId, entries[0][0]);
+    return;
+  }
+
+  const size = jusId.includes('250') ? '250ml' : '100ml';
+  document.getElementById('reduceVariantIcon').textContent = '🥤';
+  document.getElementById('reduceVariantSubtitle').textContent = `Pilih rasa jus ${size} yang ingin dikurangi 1 porsi`;
+  document.getElementById('reduceVariantBtns').innerHTML = entries.map(([f, q]) =>
+    `<button onclick="reduceJusVariant('${jusId}','${f}');closeReduceVariantPopup()"
+      style="padding:13px;border-radius:12px;border:2px solid var(--cream-dark);background:var(--cream);
+        font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;color:var(--espresso);
+        cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px;text-align:left"
+      onmouseover="this.style.borderColor='#e74c3c';this.style.background='#fff5f5'"
+      onmouseout="this.style.borderColor='var(--cream-dark)';this.style.background='var(--cream)'">
+      <span style="font-size:1.2rem">🥤</span>
+      <span style="flex:1">Jus ${f} <span style="font-size:.75rem;color:var(--text-muted);font-weight:400">${size}</span></span>
+      <span style="background:#fff8e1;color:#b45309;padding:2px 9px;border-radius:100px;font-size:.75rem;font-weight:700">×${q}</span>
+    </button>`
+  ).join('');
+  document.getElementById('reduceVariantPopup').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+// ═══ SAMBAL POPUP ═════════════════════════════════════════════════
+function openSambalPopup() {
+  document.getElementById('sambalPopup').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeSambalPopup() {
+  document.getElementById('sambalPopup').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function confirmSambal(variant) {
+  closeSambalPopup();
+  // Tambah ke variants
+  cart.sambalVariants[variant] = (cart.sambalVariants[variant] || 0) + 1;
+  // Sync total qty
+  if (!cart.addons['Sambal']) cart.addons['Sambal'] = { price: 1000, qty: 0 };
+  cart.addons['Sambal'].qty++;
+
+  updateCartBadge();
+  renderCartAddonSummary();
+  renderAddonCards();
   showToast(`➕ ${variant} ditambahkan!`);
 }
 
-// ── JUS VARIANT POPUP ──
+// Kurangi 1 varian sambal tertentu — dipanggil saat user tap di cart list
+function reduceSambalVariant(variant) {
+  if (!cart.sambalVariants[variant]) return;
+  cart.sambalVariants[variant]--;
+  if (cart.sambalVariants[variant] <= 0) delete cart.sambalVariants[variant];
+
+  if (cart.addons['Sambal']) {
+    cart.addons['Sambal'].qty--;
+    if (cart.addons['Sambal'].qty <= 0) delete cart.addons['Sambal'];
+  }
+
+  updateCartBadge();
+  renderCartAddonSummary();
+  renderAddonCards();
+  showToast(`🗑️ ${variant} dikurangi`);
+}
+
+// ═══ JUS POPUP ════════════════════════════════════════════════════
 let _jusPendingId    = '';
 let _jusPendingPrice = 0;
 
-function openJusPopup(id, price){
+function openJusPopup(id, price) {
   _jusPendingId    = id;
   _jusPendingPrice = price;
-  const label = id.includes('250') ? '250ml' : '100ml';
-  document.getElementById('jusPopupSubtitle').textContent = `Pilih satu rasa per porsi · ${label}`;
+  document.getElementById('jusPopupSubtitle').textContent =
+    `Pilih satu rasa per porsi · ${id.includes('250') ? '250ml' : '100ml'}`;
   document.getElementById('jusCustomInput').value = '';
   document.getElementById('jusPopup').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
-
-function closeJusPopup(){
+function closeJusPopup() {
   document.getElementById('jusPopup').style.display = 'none';
   document.body.style.overflow = '';
 }
-
-function confirmJus(rasa){
-  _addJusVariant(rasa);
-}
-
-function confirmJusCustom(){
+function confirmJus(rasa) { _addJusFlavor(rasa); }
+function confirmJusCustom() {
   const val = document.getElementById('jusCustomInput').value.trim();
-  if(!val){ showToast('⚠️ Ketik rasa jus terlebih dahulu'); return; }
-  _addJusVariant(val);
+  if (!val) { showToast('⚠️ Ketik rasa jus terlebih dahulu'); return; }
+  _addJusFlavor(val);
 }
 
-function _addJusVariant(rasa){
+function _addJusFlavor(rasa) {
   closeJusPopup();
-  if(!cart.jusVariants) cart.jusVariants = {};
-  if(!cart.jusVariants[_jusPendingId]) cart.jusVariants[_jusPendingId] = {};
+  // Tambah ke variants
+  if (!cart.jusVariants[_jusPendingId]) cart.jusVariants[_jusPendingId] = {};
   cart.jusVariants[_jusPendingId][rasa] = (cart.jusVariants[_jusPendingId][rasa] || 0) + 1;
-  changeAddon(_jusPendingId, _jusPendingPrice, 1);
+  // Sync total qty
+  if (!cart.addons[_jusPendingId]) cart.addons[_jusPendingId] = { price: _jusPendingPrice, qty: 0 };
+  cart.addons[_jusPendingId].qty++;
+
+  syncAddonDisplay(_jusPendingId, _jusPendingPrice);
+  updateCartBadge();
+  renderCartAddonSummary();
   showToast(`➕ Jus ${rasa} ditambahkan!`);
 }
 
-function updateQtyDisplay(id, price){
-  const qn = document.getElementById('qn-'+id);
-  const qc = document.getElementById('qc-'+id);
-  const qt = document.getElementById('qtot-'+id);
-  const qty = cart.addons[id] ? cart.addons[id].qty : 0;
-  if(qn) qn.textContent = qty;
-  if(qc) qc.classList.toggle('has-qty', qty > 0);
-  if(qt){ qt.textContent = qty>0?`${qty} porsi — Rp ${(qty*price).toLocaleString('id-ID')}`:''; qt.style.display=qty>0?'inline':'none'; }
-  if(document.getElementById('kreasigrid')) renderAddonCards();
+// Kurangi 1 varian jus tertentu — dipanggil saat user tap di cart list
+function reduceJusVariant(jusId, flavor) {
+  if (!cart.jusVariants[jusId]?.[flavor]) return;
+  cart.jusVariants[jusId][flavor]--;
+  if (cart.jusVariants[jusId][flavor] <= 0) delete cart.jusVariants[jusId][flavor];
+  if (!Object.keys(cart.jusVariants[jusId]).length) delete cart.jusVariants[jusId];
+
+  const price = jusId.includes('250') ? 12000 : 6000;
+  if (cart.addons[jusId]) {
+    cart.addons[jusId].qty--;
+    if (cart.addons[jusId].qty <= 0) delete cart.addons[jusId];
+  }
+
+  syncAddonDisplay(jusId, price);
+  updateCartBadge();
+  renderCartAddonSummary();
+  showToast(`🗑️ Jus ${flavor} dikurangi`);
 }
 
-function updateCartBadge(){
-  const total = Object.values(cart.addons).reduce((s,a)=>s+a.qty,0);
+// ═══ SYNC DISPLAY (qty angka di card/jus) ═════════════════════════
+function syncAddonDisplay(id, price) {
+  const qty = cart.addons[id]?.qty ?? 0;
+  const qn  = document.getElementById('qn-' + id);
+  const qc  = document.getElementById('qc-' + id);
+  const qt  = document.getElementById('qtot-' + id);
+  if (qn) qn.textContent = qty;
+  if (qc) qc.classList.toggle('has-qty', qty > 0);
+  if (qt) { qt.textContent = qty > 0 ? `${qty} porsi — Rp ${(qty * price).toLocaleString('id-ID')}` : ''; qt.style.display = qty > 0 ? 'inline' : 'none'; }
+}
+
+// ═══ CART BADGE ═══════════════════════════════════════════════════
+function updateCartBadge() {
+  const total = Object.values(cart.addons).reduce((s, a) => s + a.qty, 0);
   const badge = document.getElementById('cartFabBadge');
-  if(badge){ badge.textContent=total; badge.classList.toggle('show',total>0); }
+  if (badge) { badge.textContent = total; badge.classList.toggle('show', total > 0); }
 }
 
-function parsePriceFromPaketText(txt){
-  const m=(txt||'').match(/Rp\s*([\d.]+)/i);
-  if(!m) return 0;
-  return Number(m[1].replace(/\./g,''))||0;
+// ═══ TAMBAH VARIAN DARI CART ══════════════════════════════════════
+function addSambalVariant(variant) {
+  cart.sambalVariants[variant] = (cart.sambalVariants[variant] || 0) + 1;
+  if (!cart.addons['Sambal']) cart.addons['Sambal'] = { price: 1000, qty: 0 };
+  cart.addons['Sambal'].qty++;
+  updateCartBadge();
+  renderCartAddonSummary();
+  renderAddonCards();
+  showToast(`➕ ${variant} ditambahkan!`);
 }
 
-function getOrangCount(){
-  const sel=document.getElementById('cfOrang');
-  const custom=document.getElementById('cfOrangCustom');
-  if(!sel) return 1;
-  if(sel.value!=='6+') return Number(sel.value)||1;
-  const v=Number(custom?.value||0);
-  return v>=6?v:0;
+function addJusFlavorDirect(jusId, flavor, price) {
+  if (!cart.jusVariants[jusId]) cart.jusVariants[jusId] = {};
+  cart.jusVariants[jusId][flavor] = (cart.jusVariants[jusId][flavor] || 0) + 1;
+  if (!cart.addons[jusId]) cart.addons[jusId] = { price, qty: 0 };
+  cart.addons[jusId].qty++;
+  syncAddonDisplay(jusId, price);
+  updateCartBadge();
+  renderCartAddonSummary();
+  showToast(`➕ Jus ${flavor} ditambahkan!`);
 }
 
-function getOrangText(){
-  const sel=document.getElementById('cfOrang');
-  if(!sel) return '-';
-  if(sel.value!=='6+') return `${sel.value} orang`;
-  const cnt=getOrangCount();
-  return cnt>=6?`${cnt} orang`:'6+ orang';
-}
-
-function calculateOrderTotals(){
-  const paketTxt=document.getElementById('cfPaket')?.value||'';
-  const paketPrice=parsePriceFromPaketText(paketTxt);
-  const orangCount=getOrangCount();
-  const addonTotal=Object.values(cart.addons).reduce((s,a)=>s+a.price*a.qty,0);
-  const paketSubtotal=paketPrice*(orangCount||0);
-  return {paketPrice,orangCount,paketSubtotal,addonTotal,grandTotal:paketSubtotal+addonTotal};
-}
-
-function handleOrangMode(){
-  const sel=document.getElementById('cfOrang');
-  const custom=document.getElementById('cfOrangCustom');
-  if(!sel||!custom) return;
-  const isCustom=sel.value==='6+';
-  custom.style.display=isCustom?'block':'none';
-  if(!isCustom) custom.value='';
-}
-
-function renderCartAddonSummary(){
-  const el          = document.getElementById('cartAddonSummary');
+// ═══ CART ADDON LIST RENDER ═══════════════════════════════════════
+function renderCartAddonSummary() {
+  const elList      = document.getElementById('cartAddonSummary');
   const calcSummary = document.getElementById('cartCalcSummary');
   const totalRow    = document.getElementById('cartTotalRow');
   const totalAmt    = document.getElementById('cartTotalAmt');
-  const items       = Object.entries(cart.addons);
   const totals      = calculateOrderTotals();
 
-  if(el){
-    if(!items.length){
-      el.innerHTML = '';
+  if (elList) {
+    const entries = Object.entries(cart.addons);
+
+    if (!entries.length) {
+      elList.innerHTML = '';
     } else {
-      const rows = items.map(([id, a]) => {
+      let rows = '';
 
-        // Bangun pill varian
-        let variantTags = '';
+      entries.forEach(([id, a]) => {
 
-        if(id === 'Sambal' && cart.sambalVariants && Object.keys(cart.sambalVariants).length){
-          variantTags = Object.entries(cart.sambalVariants).map(([v, q]) =>
-            `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
-              background:${v==='Sambal Merah'?'#fff0f0':'#f0fff4'};
-              border:1px solid ${v==='Sambal Merah'?'#f87171':'#6ee7b7'};
-              color:${v==='Sambal Merah'?'#dc2626':'#059669'};
-              border-radius:100px;font-size:.7rem;font-weight:700;white-space:nowrap">
-              ${v==='Sambal Merah'?'🔴':'🟢'} ${v} ×${q}
-            </span>`
-          ).join('');
+        // ── SAMBAL → render tiap varian dengan tombol +/-
+        if (id === 'Sambal') {
+          const sambalEntries = Object.entries(cart.sambalVariants);
+          if (!sambalEntries.length) return;
+          sambalEntries.forEach(([variant, qty]) => {
+            const isRed = variant === 'Sambal Merah';
+            rows += `
+              <div class="cart-addon-item">
+                <span class="ca-name">${isRed ? '🔴' : '🟢'} ${variant}</span>
+                <div class="ca-qty-ctrl">
+                  <button class="mini-qty-btn minus-btn" onclick="reduceSambalVariant('${variant}')">−</button>
+                  <span style="min-width:24px;text-align:center;font-weight:700;font-size:.9rem">${qty}</span>
+                  <button class="mini-qty-btn" onclick="addSambalVariant('${variant}')">+</button>
+                  <span class="ca-price">Rp ${(qty * 1000).toLocaleString('id-ID')}</span>
+                </div>
+              </div>`;
+          });
+          return;
         }
 
-        if((id==='Jus Freshence 250ml'||id==='Jus Freshence 100ml')
-            && cart.jusVariants && cart.jusVariants[id]
-            && Object.keys(cart.jusVariants[id]).length){
-          variantTags = Object.entries(cart.jusVariants[id]).map(([v, q]) =>
-            `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
-              background:#fff8e1;border:1px solid #fcd34d;color:#b45309;
-              border-radius:100px;font-size:.7rem;font-weight:700;white-space:nowrap">
-              🥤 ${v} ×${q}
-            </span>`
-          ).join('');
+        // ── JUS → render tiap varian + ukuran dengan tombol +/-
+        if (id === 'Jus Freshence 250ml' || id === 'Jus Freshence 100ml') {
+          const size       = id.includes('250') ? '250ml' : '100ml';
+          const jusEntries = Object.entries(cart.jusVariants[id] || {});
+          if (!jusEntries.length) return;
+          jusEntries.forEach(([flavor, qty]) => {
+            rows += `
+              <div class="cart-addon-item">
+                <span class="ca-name">🥤 Jus ${flavor} <span class="jus-size-badge">${size}</span></span>
+                <div class="ca-qty-ctrl">
+                  <button class="mini-qty-btn minus-btn" onclick="reduceJusVariant('${id}','${flavor}')">−</button>
+                  <span style="min-width:24px;text-align:center;font-weight:700;font-size:.9rem">${qty}</span>
+                  <button class="mini-qty-btn" onclick="addJusFlavorDirect('${id}','${flavor}',${a.price})">+</button>
+                  <span class="ca-price">Rp ${(qty * a.price).toLocaleString('id-ID')}</span>
+                </div>
+              </div>`;
+          });
+          return;
         }
 
-        const displayName = id==='Jus Freshence 250ml' ? 'Jus Segar 250ml'
-                          : id==='Jus Freshence 100ml' ? 'Jus Segar 100ml'
-                          : id;
-
-        // Tombol + buka popup yang sesuai
-        const plusAction = id==='Sambal'              ? `openSambalPopup(1)`
-                         : id==='Jus Freshence 250ml' ? `openJusPopup('${id}',${a.price})`
-                         : id==='Jus Freshence 100ml' ? `openJusPopup('${id}',${a.price})`
-                         : `changeAddon('${id}',${a.price},1)`;
-
-        return `
-        <div class="cart-addon-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:10px 12px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <span class="ca-name">${displayName}</span>
+        // ── ITEM BIASA → +/- button seperti semula
+        const emojiMap = { Karbo:'🍚', Lauk:'🍗', Sayur:'🥬', Kerupuk:'🥔', Buah:'🍉' };
+        rows += `
+          <div class="cart-addon-item">
+            <span class="ca-name">${emojiMap[id] || '➕'} ${id}</span>
             <div class="ca-qty-ctrl">
-              <button class="mini-qty-btn minus-btn" onclick="changeAddon('${id}',${a.price},-1)">−</button>
-              <span style="min-width:20px;text-align:center;font-weight:700">${a.qty}</span>
-              <button class="mini-qty-btn" onclick="${plusAction}">+</button>
-              <span class="ca-price">Rp ${(a.price*a.qty).toLocaleString('id-ID')}</span>
+              <button class="mini-qty-btn minus-btn" onclick="changeRegularAddon('${id}',${a.price},-1)">−</button>
+              <span style="min-width:24px;text-align:center;font-weight:700;font-size:.9rem">${a.qty}</span>
+              <button class="mini-qty-btn" onclick="changeRegularAddon('${id}',${a.price},1)">+</button>
+              <span class="ca-price">Rp ${(a.price * a.qty).toLocaleString('id-ID')}</span>
             </div>
-          </div>
-          ${variantTags ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding-top:2px">${variantTags}</div>` : ''}
-        </div>`;
-      }).join('');
+          </div>`;
+      });
 
-      el.innerHTML = `
+      elList.innerHTML = `
         <div style="font-size:.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;
           text-transform:uppercase;letter-spacing:.06em">Add-on Tambahan</div>
         <div class="cart-addon-list">${rows}</div>`;
     }
   }
 
-  if(calcSummary){
+  if (calcSummary) {
     calcSummary.style.display = 'block';
-    calcSummary.innerHTML = `Paket x Orang: <strong style="color:var(--espresso)">Rp ${totals.paketSubtotal.toLocaleString('id-ID')}</strong><br>
-      Total Add-on: <strong style="color:var(--espresso)">Rp ${totals.addonTotal.toLocaleString('id-ID')}</strong>`;
+    calcSummary.innerHTML = `
+      Paket × Orang: <strong style="color:var(--espresso)">Rp ${totals.paketSubtotal.toLocaleString('id-ID')}</strong><br>
+      Total Add-on:  <strong style="color:var(--espresso)">Rp ${totals.addonTotal.toLocaleString('id-ID')}</strong>`;
   }
-  if(totalRow) totalRow.style.display = 'flex';
-  if(totalAmt) totalAmt.textContent   = 'Rp ' + totals.grandTotal.toLocaleString('id-ID');
+  if (totalRow) totalRow.style.display = 'flex';
+  if (totalAmt) totalAmt.textContent = 'Rp ' + totals.grandTotal.toLocaleString('id-ID');
 }
 
-// ── ROUTING ──
-function navigateTo(k){
-  Object.values(pages).forEach(id=>document.getElementById(id).classList.remove('active'));
+// ═══ ORDER TOTALS ═════════════════════════════════════════════════
+function parsePriceFromPaketText(txt) {
+  const m = (txt || '').match(/Rp\s*([\d.]+)/i);
+  return m ? Number(m[1].replace(/\./g, '')) || 0 : 0;
+}
+function getOrangCount() {
+  const sel    = document.getElementById('cfOrang');
+  const custom = document.getElementById('cfOrangCustom');
+  if (!sel) return 1;
+  if (sel.value !== '6+') return Number(sel.value) || 1;
+  const v = Number(custom?.value || 0);
+  return v >= 6 ? v : 0;
+}
+function getOrangText() {
+  const sel = document.getElementById('cfOrang');
+  if (!sel) return '-';
+  if (sel.value !== '6+') return `${sel.value} orang`;
+  const cnt = getOrangCount();
+  return cnt >= 6 ? `${cnt} orang` : '6+ orang';
+}
+function calculateOrderTotals() {
+  const paketPrice    = parsePriceFromPaketText(document.getElementById('cfPaket')?.value || '');
+  const orangCount    = getOrangCount();
+  const addonTotal    = Object.values(cart.addons).reduce((s, a) => s + a.price * a.qty, 0);
+  const paketSubtotal = paketPrice * (orangCount || 0);
+  return { paketPrice, orangCount, paketSubtotal, addonTotal, grandTotal: paketSubtotal + addonTotal };
+}
+
+// ═══ ROUTING ══════════════════════════════════════════════════════
+function navigateTo(k) {
+  Object.values(pages).forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById(pages[k]).classList.add('active');
-  document.querySelectorAll('.nav-link').forEach(a=>a.classList.toggle('active',a.dataset.page===k));
-  window.scrollTo({top:0,behavior:'smooth'});
-  history.pushState(null,'','#'+k);
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.page === k));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  history.pushState(null, '', '#' + k);
   triggerReveal();
-  if(k==='addon') setTimeout(()=>renderAddonCards(),50);
+  if (k === 'addon') setTimeout(() => renderAddonCards(), 50);
 }
-document.querySelectorAll('.nav-link').forEach(link=>{
-  link.addEventListener('click',function(e){e.preventDefault();const p=this.dataset.page;if(p)navigateTo(p)});
-});
-window.addEventListener('load',()=>{
-  const h=location.hash.replace('#','');
-  if(h&&pages[h]) navigateTo(h); else navigateTo('home');
-  renderAddonCards();
-  handleOrangMode();
-  ['cfPaket','cfOrang','cfOrangCustom'].forEach(id=>{
-    const node=document.getElementById(id);
-    if(!node) return;
-    node.addEventListener('change',()=>{if(id==='cfOrang')handleOrangMode();renderCartAddonSummary();});
-    if(id==='cfOrangCustom') node.addEventListener('input',renderCartAddonSummary);
-  });
-  // Hapus error saat user mulai mengetik
-  ['cfNama','cfWA','cfAlamat'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.addEventListener('input', () => clearFieldError(id));
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (this.dataset.page) navigateTo(this.dataset.page);
   });
 });
 
-// ── MOBILE MENU ──
-let mobileOpen=false;
-function toggleMobileMenu(){
-  mobileOpen=!mobileOpen;
-  document.getElementById('mobileMenu').classList.toggle('open',mobileOpen);
-  document.body.classList.toggle('menu-open',mobileOpen);
-  document.body.style.overflow=mobileOpen?'hidden':'';
+// ═══ MOBILE MENU ══════════════════════════════════════════════════
+let mobileOpen = false;
+function toggleMobileMenu() {
+  mobileOpen = !mobileOpen;
+  document.getElementById('mobileMenu').classList.toggle('open', mobileOpen);
+  document.body.classList.toggle('menu-open', mobileOpen);
+  document.body.style.overflow = mobileOpen ? 'hidden' : '';
 }
 
-// ── SCROLL ──
-window.addEventListener('scroll',()=>{
-  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>20);
-  document.getElementById('scrollTop').classList.toggle('visible',window.scrollY>400);
+// ═══ SCROLL ═══════════════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 400);
 });
 
-// ── MENU FILTER ──
-document.querySelectorAll('.filter-btn').forEach(btn=>{
-  btn.addEventListener('click',function(){
-    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+// ═══ MENU FILTER ══════════════════════════════════════════════════
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
-    const f=this.dataset.filter;
-    document.querySelectorAll('.menu-type-section').forEach(s=>{s.style.display=(f==='all'||s.dataset.cat===f)?'block':'none';});
+    const f = this.dataset.filter;
+    document.querySelectorAll('.menu-type-section').forEach(s => {
+      s.style.display = (f === 'all' || s.dataset.cat === f) ? 'block' : 'none';
+    });
   });
 });
 
-// ── CART PANEL ──
-function openCart(){
-  handleOrangMode(); renderCartAddonSummary();
+// ═══ CART PANEL ═══════════════════════════════════════════════════
+function openCart() {
+  handleOrangMode();
+  renderCartAddonSummary();
   document.getElementById('cartOverlay').classList.add('open');
   document.getElementById('cartPanel').classList.add('open');
-  document.body.style.overflow='hidden';
+  document.body.style.overflow = 'hidden';
 }
-function closeCart(){
+function closeCart() {
   document.getElementById('cartOverlay').classList.remove('open');
   document.getElementById('cartPanel').classList.remove('open');
-  document.body.style.overflow='';
+  document.body.style.overflow = '';
 }
-
-function selectPaket(val){
+function selectPaket(val) {
   openCart();
-  const sel=document.getElementById('cfPaket');
-  if(!sel) return;
-  for(let opt of sel.options){ if(opt.text.includes(val.split('—')[0].trim())||opt.value===val){opt.selected=true;break;} }
+  const sel = document.getElementById('cfPaket');
+  if (!sel) return;
+  for (let opt of sel.options) {
+    if (opt.text.includes(val.split('—')[0].trim()) || opt.value === val) { opt.selected = true; break; }
+  }
   renderCartAddonSummary();
   showToast('✅ Paket dipilih! Lengkapi form pesanan.');
 }
+function handleOrangMode() {
+  const sel    = document.getElementById('cfOrang');
+  const custom = document.getElementById('cfOrangCustom');
+  if (!sel || !custom) return;
+  const isCustom = sel.value === '6+';
+  custom.style.display = isCustom ? 'block' : 'none';
+  if (!isCustom) custom.value = '';
+}
 
-// ── SUBMIT DENGAN VALIDASI LENGKAP ──
-function submitOrder(){
+// ═══ SUBMIT ORDER ═════════════════════════════════════════════════
+function submitOrder() {
   let hasError = false;
-
-  // Bersihkan semua error dulu
-  ['cfNama','cfWA','cfAlamat','cfPaket','cfTanggal'].forEach(id => clearFieldError(id));
+  ['cfNama', 'cfWA', 'cfAlamat', 'cfPaket', 'cfTanggal'].forEach(id => clearFieldError(id));
   clearLocError();
 
   const nama    = document.getElementById('cfNama').value.trim();
@@ -2183,30 +2339,13 @@ function submitOrder(){
   const paket   = document.getElementById('cfPaket').value;
   const tanggal = document.getElementById('cfTanggal').value;
 
-  // Validasi field teks
-  if(!nama){
-    setFieldError('cfNama', '⚠️ Nama wajib diisi');
-    hasError = true;
-  }
-  if(!wa){
-    setFieldError('cfWA', '⚠️ Nomor WhatsApp wajib diisi');
-    hasError = true;
-  }
-  if(!paket){
-    setFieldError('cfPaket', '⚠️ Paket wajib dipilih');
-    hasError = true;
-  }
-  if(!tanggal){
-    setFieldError('cfTanggal', '⚠️ Tanggal mulai wajib diisi');
-    hasError = true;
-  }
-  if(!alamat){
-    setFieldError('cfAlamat', '⚠️ Alamat wajib diisi');
-    hasError = true;
-  }
+  if (!nama)    { setFieldError('cfNama',    '⚠️ Nama wajib diisi');             hasError = true; }
+  if (!wa)      { setFieldError('cfWA',      '⚠️ Nomor WhatsApp wajib diisi');   hasError = true; }
+  if (!paket)   { setFieldError('cfPaket',   '⚠️ Paket wajib dipilih');          hasError = true; }
+  if (!tanggal) { setFieldError('cfTanggal', '⚠️ Tanggal mulai wajib diisi');    hasError = true; }
+  if (!alamat)  { setFieldError('cfAlamat',  '⚠️ Alamat wajib diisi');           hasError = true; }
 
-  // Validasi lokasi peta — WAJIB
-  if(!window.userLat || !window.userLng){
+  if (!window.userLat || !window.userLng) {
     setLocError('⚠️ Lokasi di peta wajib dipilih — klik tombol di atas');
     document.getElementById('btnPickLoc').classList.add('field-error');
     hasError = true;
@@ -2214,142 +2353,143 @@ function submitOrder(){
     document.getElementById('btnPickLoc').classList.remove('field-error');
   }
 
-  // Validasi jumlah orang custom
-  if(document.getElementById('cfOrang').value === '6+' && getOrangCount() < 6){
+  if (document.getElementById('cfOrang').value === '6+' && getOrangCount() < 6) {
     setFieldError('cfOrangCustom', '⚠️ Minimal 6 orang untuk pilihan 6+');
     hasError = true;
   }
 
-  if(hasError){
-    // Scroll ke error pertama
-    const firstError = document.querySelector('.field-error, .loc-error-msg');
-    if(firstError) firstError.scrollIntoView({behavior:'smooth', block:'center'});
+  if (hasError) {
+    document.querySelector('.field-error, .loc-error-msg')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     showToast('⚠️ Lengkapi semua data yang wajib diisi');
     return;
   }
 
-  // Semua valid — lanjut kirim
+  // ── Build pesan WA ──
   const sesi        = document.getElementById('cfSesi').value;
   const orang       = getOrangText();
   const kemasan     = document.getElementById('cfKemasan').value;
   const catatan     = document.getElementById('cfCatatan').value.trim();
   const askDiscount = document.getElementById('cfAskDiscount')?.checked;
-  const dateStr     = new Date(tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const dateStr     = new Date(tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const totals      = calculateOrderTotals();
-  const addonItems  = Object.entries(cart.addons);
 
-  let addonText = '';
-  if(addonItems.length){
-    addonText = '\n\n*ADD-ON:*\n' + addonItems.map(([id, a]) => {
+  let addonLines = [];
 
-      // Sambal dengan varian
-      if(id === 'Sambal' && cart.sambalVariants && Object.keys(cart.sambalVariants).length){
-        const varianLine = Object.entries(cart.sambalVariants)
-          .map(([v, q]) => `${v} x${q}`).join(', ');
-        return `🌶️ *Sambal Extra* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}\n    › ${varianLine}`;
-      }
+  // Item biasa
+  Object.entries(cart.addons).forEach(([id, a]) => {
+    if (['Sambal', 'Jus Freshence 250ml', 'Jus Freshence 100ml'].includes(id)) return;
+    const emojiMap = { Karbo:'🍚', Lauk:'🍗', Sayur:'🥬', Kerupuk:'🥔', Buah:'🍉' };
+    addonLines.push(`${emojiMap[id] || '➕'} *${id}* ×${a.qty} = Rp ${(a.price * a.qty).toLocaleString('id-ID')}`);
+  });
 
-      // Jus 100ml dengan varian
-      if(id === 'Jus Freshence 100ml' && cart.jusVariants && cart.jusVariants[id]
-          && Object.keys(cart.jusVariants[id]).length){
-        const varianLine = Object.entries(cart.jusVariants[id])
-          .map(([v, q]) => `${v} x${q}`).join(', ');
-        return `🧃 *Jus Segar 100ml* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}\n    › ${varianLine}`;
-      }
-
-      // Jus 250ml dengan varian
-      if(id === 'Jus Freshence 250ml' && cart.jusVariants && cart.jusVariants[id]
-          && Object.keys(cart.jusVariants[id]).length){
-        const varianLine = Object.entries(cart.jusVariants[id])
-          .map(([v, q]) => `${v} x${q}`).join(', ');
-        return `🥤 *Jus Segar 250ml* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}\n    › ${varianLine}`;
-      }
-
-      // Item biasa (tanpa varian)
-      const emoji = id==='Karbo'  ? '🍚'
-                  : id==='Lauk'   ? '🍗'
-                  : id==='Sayur'  ? '🥬'
-                  : id==='Kerupuk'? '🥔'
-                  : id==='Buah'   ? '🍉' : '➕';
-      return `${emoji} *${id}* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}`;
-
-    }).join('\n');
+  // Sambal
+  if (cart.addons['Sambal'] && Object.keys(cart.sambalVariants).length) {
+    const detail = Object.entries(cart.sambalVariants).map(([v, q]) => `${v} ×${q}`).join(', ');
+    addonLines.push(`🌶️ *Sambal Extra* ×${cart.addons['Sambal'].qty} = Rp ${(cart.addons['Sambal'].qty * 1000).toLocaleString('id-ID')}\n    › ${detail}`);
   }
+
+  // Jus
+  ['Jus Freshence 250ml', 'Jus Freshence 100ml'].forEach(jusId => {
+    if (!cart.addons[jusId] || !cart.jusVariants[jusId]) return;
+    const size   = jusId.includes('250') ? '250ml' : '100ml';
+    const detail = Object.entries(cart.jusVariants[jusId]).map(([f, q]) => `${f} ×${q}`).join(', ');
+    addonLines.push(`🥤 *Jus Segar ${size}* ×${cart.addons[jusId].qty} = Rp ${(cart.addons[jusId].qty * cart.addons[jusId].price).toLocaleString('id-ID')}\n    › ${detail}`);
+  });
+
+  const addonText    = addonLines.length ? '\n\n*ADD-ON:*\n' + addonLines.join('\n') : '';
   const discountText = askDiscount ? '\nMohon info promo/diskon jika tersedia.' : '';
   const catatanText  = catatan ? `\nCatatan: ${catatan}` : '';
-
-  const mapsLink = `https://www.google.com/maps?q=${window.userLat},${window.userLng}`;
+  const mapsLink     = `https://www.google.com/maps?q=${window.userLat},${window.userLng}`;
 
   const msg = `*Halo Daily Catering Jogja*\n\nSaya ingin melakukan pemesanan:\n\n*DATA*\nNama: ${nama}\nWA: ${wa}\n\n*PESANAN*\nPaket: ${paket}\nSesi: ${sesi}\nJumlah: ${orang} pax\nKemasan: ${kemasan}\nTanggal: ${dateStr}${addonText}\n\n*TOTAL*\nPaket: Rp ${totals.paketSubtotal.toLocaleString('id-ID')}\nAdd-on: Rp ${totals.addonTotal.toLocaleString('id-ID')}\nTotal: Rp ${totals.grandTotal.toLocaleString('id-ID')}${discountText}${catatanText}\n\n*ALAMAT PENGIRIMAN*\n${alamat}\n\n*Lokasi Peta:* ${mapsLink}\n\nMohon konfirmasi ketersediaan dan informasi pembayaran. Terima kasih!`;
 
-  let phone = WA_NUMBER.replace(/\D/g,'');
-  if(phone.startsWith('0')) phone = '62'+phone.slice(1);
-  if(!phone.startsWith('62')) phone = '62'+phone;
-
+  let phone = WA_NUMBER.replace(/\D/g, '');
+  if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+  if (!phone.startsWith('62')) phone = '62' + phone;
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
 
+  // Reset cart
+  cart.addons = {}; cart.sambalVariants = {}; cart.jusVariants = {};
+  updateCartBadge(); renderCartAddonSummary(); renderAddonCards();
   closeCart();
-  cart.addons = {};
-  cart.sambalVariants = {};
-  cart.jusVariants    = {};
-  updateCartBadge();
-  renderCartAddonSummary();
-  renderAddonCards();
 }
 
-// ── GALLERY ──
-const foodGallery=[
-  {emoji:'🍛',name:'Nasi Ayam Goreng Kremes',cat:'Reguler',desc:'Ayam goreng renyah dengan kremes garing, nasi putih pulen, sayur asem segar & sambal.',color:'linear-gradient(135deg,#8B4513,#C8833A)',img:'https://i.pinimg.com/736x/ed/8a/15/ed8a157c3b3a09e36d35bd0e98ba9d38.jpg',floats:['✨','🔥','👌']},
-  {emoji:'🥘',name:'Nasi Bigsize Lengkap',cat:'Bigsize',desc:'Porsi jumbo! 2 lauk utama pilihan, nasi putih, 2 sayur — kenyang sepanjang hari.',color:'linear-gradient(135deg,#2D4A2D,#4A7A4A)',img:'https://i.pinimg.com/1200x/14/88/57/1488573b589df1451c69f003ca48fcdb.jpg',floats:['💪','🍽️','😋']},
-  {emoji:'🥗',name:'Paket Diet Sehat',cat:'Diet',desc:'Nasi merah, protein lean rebus, sayur segar rebus. Rendah kalori, tetap nikmat.',color:'linear-gradient(135deg,#1E3A1E,#2D5A2D)',img:'https://i.pinimg.com/736x/32/7d/e5/327de50b97138d35c4f323f60006f82e.jpg',floats:['🥦','💚','✅']},
-  {emoji:'🍱',name:'Fampack Keluarga',cat:'Fampack',desc:'Satu box besar berisi nasi + 2 lauk + 2 sayur untuk dinikmati bersama keluarga.',color:'linear-gradient(135deg,#6B3A1F,#C8833A)',img:'https://i.pinimg.com/1200x/8f/53/bf/8f53bf58d1d2935bf50381bd20189413.jpg',floats:['👨‍👩‍👧‍👦','❤️','🏠']},
-  {emoji:'🌱',name:'Freshealthy Premium',cat:'Freshealthy',desc:'Nasi merah organik + protein pilihan + sayur organik segar. Plus bonus jus Freshence!',color:'linear-gradient(135deg,#0D200D,#1E3A1E)',img:'https://i.pinimg.com/736x/0f/55/71/0f5571d580344330254a967c2c734033.jpg',floats:['🌿','⭐','🥤']},
-  {emoji:'🥙',name:'Funhealthy Seimbang',cat:'Funhealthy',desc:'Menu sehat yang tetap lezat. Ayam bumbu rempah + sayur tumis + buah potong segar.',color:'linear-gradient(135deg,#223A1A,#3A5A2D)',img:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80&auto=format&fit=crop',floats:['🏃','💪','🍎']},
-  {emoji:'🍜',name:'Funsize Hemat',cat:'Funsize',desc:'Porsi pas, harga ramah di kantong. Lauk + nasi + sayur dalam kemasan praktis.',color:'linear-gradient(135deg,#3D2010,#6B3A1F)',img:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&q=80&auto=format&fit=crop',floats:['😄','💛','👍']},
-  {emoji:'🐔',name:'Ayam Bakar Kecap',cat:'Menu Andalan',desc:'Ayam bakar empuk dengan bumbu kecap manis khas Jogja, disajikan dengan lalapan segar.',color:'linear-gradient(135deg,#C87040,#E8A85A)',img:'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80&auto=format&fit=crop',floats:['🔥','😍','🤤']},
-  {emoji:'🥬',name:'Paket Diet Salmon',cat:'Freshealthy',desc:'Ikan salmon kukus dengan salad sayur organik segar. Tinggi omega-3 & protein.',color:'linear-gradient(135deg,#1A2E1A,#2D4A2D)',img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80&auto=format&fit=crop',floats:['🐟','💚','🌟']},
+// ═══ GALLERY ══════════════════════════════════════════════════════
+const foodGallery = [
+  { emoji:'🍛', name:'Nasi Ayam Goreng Kremes', cat:'Reguler',    desc:'Ayam goreng renyah dengan kremes garing, nasi putih pulen, sayur asem segar & sambal.',       img:'https://i.pinimg.com/736x/ed/8a/15/ed8a157c3b3a09e36d35bd0e98ba9d38.jpg',    floats:['✨','🔥','👌'] },
+  { emoji:'🥘', name:'Nasi Bigsize Lengkap',    cat:'Bigsize',    desc:'Porsi jumbo! 2 lauk utama pilihan, nasi putih, 2 sayur — kenyang sepanjang hari.',              img:'https://i.pinimg.com/1200x/14/88/57/1488573b589df1451c69f003ca48fcdb.jpg',   floats:['💪','🍽️','😋'] },
+  { emoji:'🥗', name:'Paket Diet Sehat',        cat:'Diet',       desc:'Nasi merah, protein lean rebus, sayur segar rebus. Rendah kalori, tetap nikmat.',              img:'https://i.pinimg.com/736x/32/7d/e5/327de50b97138d35c4f323f60006f82e.jpg',    floats:['🥦','💚','✅'] },
+  { emoji:'🍱', name:'Fampack Keluarga',        cat:'Fampack',    desc:'Satu box besar berisi nasi + 2 lauk + 2 sayur untuk dinikmati bersama keluarga.',             img:'https://i.pinimg.com/1200x/8f/53/bf/8f53bf58d1d2935bf50381bd20189413.jpg',   floats:['👨‍👩‍👧‍👦','❤️','🏠'] },
+  { emoji:'🌱', name:'Freshealthy Premium',     cat:'Freshealthy',desc:'Nasi merah organik + protein pilihan + sayur organik segar. Plus bonus jus Freshence!',        img:'https://i.pinimg.com/736x/0f/55/71/0f5571d580344330254a967c2c734033.jpg',    floats:['🌿','⭐','🥤'] },
+  { emoji:'🥙', name:'Funhealthy Seimbang',     cat:'Funhealthy', desc:'Menu sehat yang tetap lezat. Ayam bumbu rempah + sayur tumis + buah potong segar.',           img:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80',   floats:['🏃','💪','🍎'] },
+  { emoji:'🍜', name:'Funsize Hemat',           cat:'Funsize',    desc:'Porsi pas, harga ramah di kantong. Lauk + nasi + sayur dalam kemasan praktis.',               img:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&q=80',      floats:['😄','💛','👍'] },
+  { emoji:'🐔', name:'Ayam Bakar Kecap',        cat:'Menu Andalan',desc:'Ayam bakar empuk dengan bumbu kecap manis khas Jogja, disajikan dengan lalapan segar.',      img:'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80',   floats:['🔥','😍','🤤'] },
+  { emoji:'🥬', name:'Paket Diet Salmon',       cat:'Freshealthy',desc:'Ikan salmon kukus dengan salad sayur organik segar. Tinggi omega-3 & protein.',               img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80',      floats:['🐟','💚','🌟'] },
 ];
-let currentGalleryIdx=0;
-function openGallery(idx){currentGalleryIdx=idx;renderGalleryModal(idx);document.getElementById('galleryModal').classList.add('open');document.body.style.overflow='hidden';}
-function closeGallery(){document.getElementById('galleryModal').classList.remove('open');document.body.style.overflow='';}
-function galleryNav(dir){currentGalleryIdx=(currentGalleryIdx+dir+foodGallery.length)%foodGallery.length;renderGalleryModal(currentGalleryIdx);}
-function renderGalleryModal(idx){
-  const item=foodGallery[idx];
-  const modal=document.getElementById('galleryModal');
-  modal.querySelector('.gallery-modal-img').style.backgroundImage=`url('${item.img}')`;
-  modal.querySelector('.gallery-modal-img').style.backgroundSize='cover';
-  modal.querySelector('.gallery-modal-img').style.backgroundPosition='center';
-  modal.querySelector('.gallery-modal-emoji').textContent=item.emoji;
-  modal.querySelector('.gallery-modal-cat').textContent=item.cat;
-  modal.querySelector('.gallery-modal-name').textContent=item.name;
-  modal.querySelector('.gallery-modal-desc').textContent=item.desc;
-  modal.querySelector('.gallery-floats').innerHTML=item.floats.map((f,i)=>`<span class="gfloat" style="animation-delay:${i*.4}s">${f}</span>`).join('');
-  modal.querySelector('.gallery-counter').textContent=(idx+1)+' / '+foodGallery.length;
-}
-document.getElementById('galleryModal').addEventListener('click',function(e){if(e.target===this)closeGallery();});
-document.getElementById('mapModal').addEventListener('click',function(e){if(e.target===this)closeMapModal();});
 
-// ── TOAST ──
-function showToast(msg){
-  const t=document.getElementById('toastMsg');
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2500);
+let currentGalleryIdx = 0;
+function openGallery(idx) { currentGalleryIdx = idx; renderGalleryModal(idx); document.getElementById('galleryModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeGallery()   { document.getElementById('galleryModal').classList.remove('open'); document.body.style.overflow = ''; }
+function galleryNav(dir)  { currentGalleryIdx = (currentGalleryIdx + dir + foodGallery.length) % foodGallery.length; renderGalleryModal(currentGalleryIdx); }
+function renderGalleryModal(idx) {
+  const item  = foodGallery[idx];
+  const modal = document.getElementById('galleryModal');
+  modal.querySelector('.gallery-modal-img').style.backgroundImage    = `url('${item.img}')`;
+  modal.querySelector('.gallery-modal-img').style.backgroundSize     = 'cover';
+  modal.querySelector('.gallery-modal-img').style.backgroundPosition = 'center';
+  modal.querySelector('.gallery-modal-emoji').textContent = item.emoji;
+  modal.querySelector('.gallery-modal-cat').textContent   = item.cat;
+  modal.querySelector('.gallery-modal-name').textContent  = item.name;
+  modal.querySelector('.gallery-modal-desc').textContent  = item.desc;
+  modal.querySelector('.gallery-floats').innerHTML = item.floats.map((f, i) => `<span class="gfloat" style="animation-delay:${i * .4}s">${f}</span>`).join('');
+  modal.querySelector('.gallery-counter').textContent = (idx + 1) + ' / ' + foodGallery.length;
 }
 
-// ── REVEAL ──
-function triggerReveal(){
-  setTimeout(()=>{
-    document.querySelectorAll('.reveal').forEach((el,i)=>{
-      el.style.transitionDelay=(i*.06)+'s';
+document.getElementById('galleryModal').addEventListener('click', e => { if (e.target === document.getElementById('galleryModal')) closeGallery(); });
+document.getElementById('mapModal').addEventListener('click',     e => { if (e.target === document.getElementById('mapModal')) closeMapModal(); });
+
+// ═══ TOAST ════════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toastMsg');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══ REVEAL ═══════════════════════════════════════════════════════
+function triggerReveal() {
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      el.style.transitionDelay = (i * .06) + 's';
       el.classList.add('visible');
     });
-  },100);
+  }, 100);
 }
-const observer=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}});
-},{threshold:.1});
-function initReveal(){document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));}
-window.addEventListener('load',()=>{initReveal();triggerReveal();});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: .1 });
+function initReveal() { document.querySelectorAll('.reveal').forEach(el => observer.observe(el)); }
+
+// ═══ INIT ═════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const h = location.hash.replace('#', '');
+  if (h && pages[h]) navigateTo(h); else navigateTo('home');
+  renderAddonCards();
+  handleOrangMode();
+
+  ['cfPaket', 'cfOrang', 'cfOrangCustom'].forEach(id => {
+    const node = document.getElementById(id);
+    if (!node) return;
+    node.addEventListener('change', () => { if (id === 'cfOrang') handleOrangMode(); renderCartAddonSummary(); });
+    if (id === 'cfOrangCustom') node.addEventListener('input', renderCartAddonSummary);
+  });
+  ['cfNama', 'cfWA', 'cfAlamat'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => clearFieldError(id));
+  });
+
+  initReveal();
+  triggerReveal();
+});
 </script>
 </body>
 </html>
