@@ -1807,17 +1807,26 @@ function useSelectedLocation() {
   if (!selectedLat || !selectedLng) return;
   window.userLat = selectedLat; window.userLng = selectedLng; window.userAddr = selectedAddr;
   const addrField = document.getElementById('cfAlamat');
-  if (!addrField.value.trim()) addrField.value = selectedAddr.split(',').slice(0, 3).join(',').trim();
+  if (!addrField.value.trim()) {
+    const autoFilled = selectedAddr.split(',').slice(0, 3).join(',').trim();
+    addrField.value = autoFilled;
+    window.mapFilledAddr = autoFilled;
+  } else {
+    window.mapFilledAddr = '';
+  }
   document.getElementById('btnPickLoc').classList.add('active');
-  document.getElementById('btnPickLoc').innerHTML = '✅ Lokasi Dipilih <span style="color:#e74c3c;font-size:.7rem">(Wajib)</span>';
+  document.getElementById('btnPickLoc').innerHTML = '✅ Lokasi Dipilih';
   document.getElementById('btnRemoveLoc').classList.add('show');
-  document.getElementById('gpsStatus').textContent = '✅ Lokasi berhasil dipilih via peta';
+  document.getElementById('gpsStatus').textContent = '';
   clearFieldError('cfAlamat'); clearLocError();
   closeMapModal();
   showToast('📍 Lokasi berhasil dipilih!');
 }
 
 function removeLocation() {
+  const addrField = document.getElementById('cfAlamat');
+  if (window.mapFilledAddr && addrField.value.trim() === window.mapFilledAddr) addrField.value = '';
+  window.mapFilledAddr = '';
   window.userLat = null; window.userLng = null; window.userAddr = '';
   selectedLat = null; selectedLng = null; selectedAddr = '';
   if (mapMarker && leafletMap) { leafletMap.removeLayer(mapMarker); mapMarker = null; }
