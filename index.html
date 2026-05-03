@@ -516,6 +516,58 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
   .gallery-grid{grid-template-columns:1fr}
   .cf-row{grid-template-columns:1fr}
 }
+
+/* Fix: map search bar full width */
+.map-search-bar {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cream-dark);
+  flex-shrink: 0;
+  overflow: visible;
+  gap: 0;
+}
+.map-search-wrapper {
+  flex: 1;
+  position: relative;
+  z-index: 3500;
+  width: 100%;
+}
+.map-search-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Validasi error state */
+.field-error {
+  border-color: #e74c3c !important;
+  background: #fff5f5 !important;
+}
+.field-error-msg {
+  font-size: .75rem;
+  color: #e74c3c;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Jus variant button */
+.jus-variant-btn {
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 2px solid var(--cream-dark);
+  background: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--espresso);
+  cursor: pointer;
+  transition: all .2s;
+}
+.jus-variant-btn:hover {
+  border-color: var(--amber);
+  background: var(--amber-pale);
+  transform: translateY(-1px);
+}
 </style>
 </head>
 <body>
@@ -1207,7 +1259,7 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
             <p>Jus buah segar berbagai pilihan rasa. Ukuran besar, menyegarkan!</p>
             <div class="jus-price">Rp 12.000 <span>/ 250 ml</span></div>
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-              <div class="qty-control" id="qc-jus250"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 250ml',12000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 250ml">0</span><button class="qty-btn" onclick="changeAddon('Jus Freshence 250ml',12000,1)">+</button></div>
+              <div class="qty-control" id="qc-jus250"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 250ml',12000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 250ml">0</span><button class="qty-btn" onclick="openJusPopup('Jus Freshence 250ml',12000)">+</button></div>
               <span id="qtot-Jus Freshence 250ml" style="font-size:.82rem;color:var(--amber);font-weight:700;display:none"></span>
             </div>
           </div>
@@ -1222,7 +1274,7 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
             <p>Ukuran mini praktis, menyegarkan untuk menemani makan siangmu.</p>
             <div class="jus-price">Rp 6.000 <span>/ 100 ml</span></div>
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-              <div class="qty-control" id="qc-jus100"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 100ml',6000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 100ml">0</span><button class="qty-btn" onclick="changeAddon('Jus Freshence 100ml',6000,1)">+</button></div>
+              <div class="qty-control" id="qc-jus100"><button class="qty-btn minus" onclick="changeAddon('Jus Freshence 100ml',6000,-1)">−</button><span class="qty-num" id="qn-Jus Freshence 100ml">0</span><button class="qty-btn" onclick="openJusPopup('Jus Freshence 100ml',6000)">+</button></div>
               <span id="qtot-Jus Freshence 100ml" style="font-size:.82rem;color:var(--amber);font-weight:700;display:none"></span>
             </div>
           </div>
@@ -1439,10 +1491,9 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
     <div class="cf-group">
       <label>Alamat Pengiriman *</label>
       <textarea id="cfAlamat" placeholder="Nama jalan, nomor, RT/RW, kelurahan..."></textarea>
-      <!-- Updated location button group with map + remove -->
       <div class="location-btn-group">
         <button type="button" class="btn-location" id="btnPickLoc" onclick="openMapModal()">
-          📍 Pilih Lokasi di Peta (Opsional)
+          📍 Pilih Lokasi di Peta <span style="color:#e74c3c;font-size:.7rem">(Wajib)</span>
         </button>
         <button type="button" class="btn-remove-location" id="btnRemoveLoc" onclick="removeLocation()">
           ✕ Hapus
@@ -1452,6 +1503,7 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
     </div>
     <div id="cartAddonSummary"></div>
     <div class="cf-group">
+      <label>Catatan</label>
       <textarea id="cfCatatan" placeholder="Contoh: tidak suka pedas, alergi udang..."></textarea>
     </div>
     <div class="cf-group" style="margin-top:2px">
@@ -1483,11 +1535,13 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
       <button class="map-modal-close" onclick="closeMapModal()">✕</button>
     </div>
     <div class="map-search-bar">
-      <div class="map-search-wrapper">
-        <input type="text" class="map-search-input" id="mapSearchInput" placeholder="Cari alamat, nama tempat..." onkeypress="if(event.key==='Enter')searchMapLocation()">
+      <div class="map-search-wrapper" style="flex:1;position:relative;">
+        <input type="text" class="map-search-input" id="mapSearchInput"
+          placeholder="Cari alamat, nama tempat..."
+          onkeypress="if(event.key==='Enter')searchMapLocation()"
+          oninput="if(this.value.length>2)searchMapLocation()">
         <div class="map-search-results" id="mapSearchResults"></div>
       </div>
-      <button class="map-search-btn" onclick="searchMapLocation()">🔍 Cari</button>
     </div>
     <div id="mapContainer"></div>
     <div class="map-modal-footer">
@@ -1530,6 +1584,78 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
 
 <div id="toastMsg"></div>
 
+<!-- Modal Sambal-->
+<div id="sambalPopup" style="display:none;position:fixed;inset:0;z-index:4000;align-items:center;justify-content:center;padding:16px">
+  <div id="sambalBackdrop" onclick="closeSambalPopup()" style="position:absolute;inset:0;background:rgba(30,18,8,.5);backdrop-filter:blur(4px)"></div>
+  <div style="position:relative;background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:fadeUp .25s ease;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:8px">🌶️</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--espresso);margin-bottom:6px">Pilih Jenis Sambal</h3>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:20px">Pilih satu jenis sambal per porsi</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmSambal('Sambal Merah')" style="padding:14px;border-radius:12px;border:2px solid var(--cream-dark);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;color:var(--espresso);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px"
+        onmouseover="this.style.borderColor='#c0392b';this.style.background='#fff5f5'"
+        onmouseout="this.style.borderColor='var(--cream-dark)';this.style.background='var(--cream)'">
+        <span style="font-size:1.4rem">🔴</span>
+        <span>Sambal Merah</span>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted)">Pedas gurih</span>
+      </button>
+      <button onclick="confirmSambal('Sambal Ijo')" style="padding:14px;border-radius:12px;border:2px solid var(--cream-dark);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;color:var(--espresso);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px"
+        onmouseover="this.style.borderColor='#27ae60';this.style.background='#f0fff4'"
+        onmouseout="this.style.borderColor='var(--cream-dark)';this.style.background='var(--cream)'">
+        <span style="font-size:1.4rem">🟢</span>
+        <span>Sambal Ijo</span>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted)">Segar & pedas</span>
+      </button>
+    </div>
+    <button onclick="closeSambalPopup()" style="margin-top:16px;width:100%;padding:10px;border-radius:10px;border:none;background:var(--cream-dark);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;color:var(--text-muted);cursor:pointer">
+      Batal
+    </button>
+  </div>
+</div>
+
+<!-- Modal Jus -->
+<div id="jusPopup" style="display:none;position:fixed;inset:0;z-index:4000;align-items:center;justify-content:center;padding:16px">
+  <div onclick="closeJusPopup()" style="position:absolute;inset:0;background:rgba(30,18,8,.5);backdrop-filter:blur(4px)"></div>
+  <div style="position:relative;background:var(--white);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:fadeUp .25s ease;text-align:center;max-height:90vh;overflow-y:auto">
+    <div style="font-size:2.5rem;margin-bottom:8px">🥤</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--espresso);margin-bottom:4px">Pilih Rasa Jus</h3>
+    <p id="jusPopupSubtitle" style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Pilih satu rasa per porsi</p>
+
+    <!-- PRESET RASA -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <button onclick="confirmJus('Jeruk')"       class="jus-variant-btn">🍊 Jeruk</button>
+      <button onclick="confirmJus('Mangga')"      class="jus-variant-btn">🥭 Mangga</button>
+      <button onclick="confirmJus('Jambu')"       class="jus-variant-btn">🍈 Jambu</button>
+      <button onclick="confirmJus('Semangka')"    class="jus-variant-btn">🍉 Semangka</button>
+      <button onclick="confirmJus('Alpukat')"     class="jus-variant-btn">🥑 Alpukat</button>
+      <button onclick="confirmJus('Nanas')"       class="jus-variant-btn">🍍 Nanas</button>
+    </div>
+
+    <!-- INPUT LAINNYA -->
+    <div style="border-top:1px solid var(--cream-dark);padding-top:12px;margin-bottom:12px">
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px">Rasa lain? Ketik di sini:</p>
+      <div style="display:flex;gap:8px">
+        <input id="jusCustomInput" type="text" placeholder="Contoh: Melon, Tomat..."
+          style="flex:1;padding:9px 12px;border:2px solid var(--cream-dark);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--amber)'"
+          onblur="this.style.borderColor='var(--cream-dark)'"
+          onkeypress="if(event.key==='Enter')confirmJusCustom()">
+        <button onclick="confirmJusCustom()"
+          style="padding:9px 14px;background:var(--amber);color:white;border:none;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap"
+          onmouseover="this.style.background='var(--amber-light)'"
+          onmouseout="this.style.background='var(--amber)'">
+          ✓ Tambah
+        </button>
+      </div>
+    </div>
+
+    <button onclick="closeJusPopup()"
+      style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--cream-dark);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;color:var(--text-muted);cursor:pointer">
+      Batal
+    </button>
+  </div>
+</div>
+
 <!-- ════════════ JAVASCRIPT ════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -1540,7 +1666,7 @@ const addonData = [
   {id:'Karbo',name:'Karbo (Nasi)',price:2000,emoji:'🍚',bg:'linear-gradient(135deg,#C8833A,#8B4513)',img:'https://i.pinimg.com/736x/6e/ff/db/6effdb4016deb806f3644f22510cad1d.jpg',desc:'Tambahan nasi putih atau nasi merah sesuai paket.'},
   {id:'Lauk',name:'Lauk Tambahan',price:4500,emoji:'🍗',bg:'linear-gradient(135deg,#8B4513,#6B3A1F)',img:'https://i.pinimg.com/736x/2f/b3/de/2fb3de74c2ca41b17460aa1d494b1efc.jpg',desc:'Tambahan lauk sesuai menu hari itu (ayam, ikan, daging, dll.)'},
   {id:'Sayur',name:'Sayur Tambahan',price:2500,emoji:'🥗',bg:'linear-gradient(135deg,#2D4A2D,#4A7A4A)',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80&auto=format&fit=crop',desc:'Sayur pilihan — tumis, rebus, atau lodeh sesuai menu.'},
-  {id:'Sambal',name:'Sambal Extra',price:1000,emoji:'🌶️',bg:'linear-gradient(135deg,#c0392b,#922b21)',img:'https://i.pinimg.com/1200x/4e/ee/b3/4eeeb3ab975e0e557bac32b8065d9176.jpg',desc:'Sambal merah atau sambal ijo, dikirim terpisah dalam wadah.'},
+  {id:'Sambal',name:'Sambal Extra',price:1000,emoji:'🌶️',bg:'linear-gradient(135deg,#c0392b,#922b21)',img:'https://i.pinimg.com/1200x/4e/ee/b3/4eeeb3ab975e0e557bac32b8065d9176.jpg',desc:'Sambal merah atau sambal ijo, dikirim terpisah dalam wadah.',  variants:['Sambal Merah','Sambal Ijo']},
   {id:'Kerupuk',name:'Kerupuk',price:1000,emoji:'🥔',bg:'linear-gradient(135deg,#d4a017,#a07010)',img:'https://i.pinimg.com/1200x/e5/4d/f8/e54df8e669cf87e873d96b15d6b5e74c.jpg',desc:'Kerupuk renyah sebagai pelengkap makan. Tambah kriuk-nya!'},
   {id:'Buah',name:'Buah Potong Segar',price:2000,emoji:'🍉',bg:'linear-gradient(135deg,#1a3a1a,#2D5A2D)',img:'https://i.pinimg.com/736x/4d/b5/20/4db520672d666517f58953e0751db900.jpg',desc:'Buah potong musiman segar. Vitamin alami untuk melengkapi makan.'},
 ];
@@ -1554,7 +1680,6 @@ function openMapModal(){
   document.body.style.overflow = 'hidden';
   setTimeout(() => {
     if(!leafletMap){
-      // Center on Yogyakarta
       leafletMap = L.map('mapContainer').setView([-7.797068, 110.370529], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -1564,7 +1689,6 @@ function openMapModal(){
     } else {
       leafletMap.invalidateSize();
     }
-    // If location already picked, restore marker
     if(selectedLat && selectedLng){
       placeMarker(selectedLat, selectedLng, selectedAddr);
     }
@@ -1611,27 +1735,31 @@ function reverseGeocode(lat, lng){
     .catch(() => placeMarker(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`));
 }
 
+let _searchTimeout = null;
 async function searchMapLocation(){
   const q = document.getElementById('mapSearchInput').value.trim();
-  if(!q) return;
-  const resultsEl = document.getElementById('mapSearchResults');
-  resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Mencari...</div>';
-  resultsEl.classList.add('show');
-  try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q+' Yogyakarta')}&limit=5&accept-language=id`);
-    const data = await r.json();
-    if(!data.length){
-      resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
-      return;
+  if(!q || q.length < 3) return;
+  clearTimeout(_searchTimeout);
+  _searchTimeout = setTimeout(async () => {
+    const resultsEl = document.getElementById('mapSearchResults');
+    resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Mencari...</div>';
+    resultsEl.classList.add('show');
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q+' Yogyakarta')}&limit=5&accept-language=id`);
+      const data = await r.json();
+      if(!data.length){
+        resultsEl.innerHTML = '<div class="map-search-result-item" style="color:var(--text-muted)">Lokasi tidak ditemukan.</div>';
+        return;
+      }
+      resultsEl.innerHTML = data.map(item =>
+        `<div class="map-search-result-item" onclick="selectSearchResult(${item.lat},${item.lon},'${item.display_name.replace(/'/g,"\\'")}')">
+          📍 ${item.display_name}
+        </div>`
+      ).join('');
+    } catch(e) {
+      resultsEl.innerHTML = '<div class="map-search-result-item" style="color:#dc2626">Gagal mencari. Cek koneksi internet.</div>';
     }
-    resultsEl.innerHTML = data.map((item,i) =>
-      `<div class="map-search-result-item" onclick="selectSearchResult(${item.lat},${item.lon},'${item.display_name.replace(/'/g,"\\'")}')">
-        📍 ${item.display_name}
-      </div>`
-    ).join('');
-  } catch(e) {
-    resultsEl.innerHTML = '<div class="map-search-result-item" style="color:#dc2626">Gagal mencari. Periksa koneksi internet.</div>';
-  }
+  }, 400);
 }
 
 function selectSearchResult(lat, lng, addr){
@@ -1646,18 +1774,20 @@ function useSelectedLocation(){
   window.userLat = selectedLat;
   window.userLng = selectedLng;
   window.userAddr = selectedAddr;
-  // Update address textarea with short address
   const addrField = document.getElementById('cfAlamat');
   if(!addrField.value.trim()){
-    // Extract short address from full nominatim result
     const parts = selectedAddr.split(',');
     addrField.value = parts.slice(0,3).join(',').trim();
   }
-  // Update UI
   document.getElementById('btnPickLoc').classList.add('active');
-  document.getElementById('btnPickLoc').textContent = '✅ Lokasi Dipilih';
+  document.getElementById('btnPickLoc').innerHTML = '✅ Lokasi Dipilih <span style="color:#e74c3c;font-size:.7rem">(Wajib)</span>';
   document.getElementById('btnRemoveLoc').classList.add('show');
   document.getElementById('gpsStatus').textContent = '✅ Lokasi berhasil dipilih via peta';
+
+  // Hapus error state jika ada
+  clearFieldError('cfAlamat');
+  clearLocError();
+
   closeMapModal();
   showToast('📍 Lokasi berhasil dipilih!');
 }
@@ -1674,16 +1804,52 @@ function removeLocation(){
   document.getElementById('mapAddrText').style.fontStyle = 'italic';
   document.getElementById('mapAddrText').style.color = 'var(--text-muted)';
   document.getElementById('btnPickLoc').classList.remove('active');
-  document.getElementById('btnPickLoc').textContent = '📍 Pilih Lokasi di Peta (Opsional)';
+  document.getElementById('btnPickLoc').innerHTML = '📍 Pilih Lokasi di Peta <span style="color:#e74c3c;font-size:.7rem">(Wajib)</span>';
   document.getElementById('btnRemoveLoc').classList.remove('show');
   document.getElementById('gpsStatus').textContent = '';
   showToast('🗑️ Lokasi dihapus');
 }
 
-// Close search results on click outside
 document.addEventListener('click', function(e){
   if(!e.target.closest('.map-search-wrapper')) document.getElementById('mapSearchResults').classList.remove('show');
 });
+
+// ── VALIDASI HELPER ──
+function setFieldError(id, msg){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('field-error');
+  // hapus pesan lama jika ada
+  const existing = el.parentNode.querySelector('.field-error-msg');
+  if(existing) existing.remove();
+  const span = document.createElement('span');
+  span.className = 'field-error-msg';
+  span.textContent = msg;
+  el.parentNode.insertBefore(span, el.nextSibling);
+}
+
+function clearFieldError(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('field-error');
+  const msg = el.parentNode.querySelector('.field-error-msg');
+  if(msg) msg.remove();
+}
+
+function setLocError(msg){
+  const btn = document.getElementById('btnPickLoc');
+  if(!btn) return;
+  clearLocError();
+  const span = document.createElement('span');
+  span.className = 'field-error-msg loc-error-msg';
+  span.textContent = msg;
+  btn.parentNode.insertBefore(span, btn.parentNode.querySelector('#gpsStatus'));
+}
+
+function clearLocError(){
+  const existing = document.querySelector('.loc-error-msg');
+  if(existing) existing.remove();
+}
 
 // ── ADDON RENDER ──
 function renderAddonCards(){
@@ -1701,7 +1867,7 @@ function renderAddonCards(){
         <div class="qty-control ${hasQty?'has-qty':''}" id="qc-${a.id}">
           <button class="qty-btn minus" onclick="changeAddon('${a.id}',${a.price},-1)">−</button>
           <span class="qty-num" id="qn-${a.id}">${qty}</span>
-          <button class="qty-btn" onclick="changeAddon('${a.id}',${a.price},1)">+</button>
+          <button class="qty-btn" onclick="${a.variants ? `openSambalPopup(1)` : `changeAddon('${a.id}',${a.price},1)`}">+</button>
         </div>
         ${hasQty ? `<div style="font-size:.78rem;color:var(--amber);font-weight:700;margin-top:6px">✅ ${qty} porsi — Rp ${(qty*a.price).toLocaleString('id-ID')}</div>` : ''}
       </div>
@@ -1718,6 +1884,71 @@ function changeAddon(id, price, delta){
   updateCartBadge();
   renderCartAddonSummary();
   if(delta > 0) showToast(`➕ ${id} ditambahkan ke pesanan!`);
+}
+
+// ── SAMBAL VARIANT POPUP ──
+let _sambalPendingDelta = 1;
+
+function openSambalPopup(delta){
+  _sambalPendingDelta = delta;
+  const popup = document.getElementById('sambalPopup');
+  popup.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSambalPopup(){
+  document.getElementById('sambalPopup').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function confirmSambal(variant){
+  closeSambalPopup();
+  // Simpan qty per varian
+  if(!cart.sambalVariants) cart.sambalVariants = {};
+  if(_sambalPendingDelta > 0){
+    cart.sambalVariants[variant] = (cart.sambalVariants[variant] || 0) + 1;
+  }
+  // Tetap update total qty Sambal di cart.addons
+  changeAddon('Sambal', 1000, _sambalPendingDelta);
+  showToast(`➕ ${variant} ditambahkan!`);
+}
+
+// ── JUS VARIANT POPUP ──
+let _jusPendingId    = '';
+let _jusPendingPrice = 0;
+
+function openJusPopup(id, price){
+  _jusPendingId    = id;
+  _jusPendingPrice = price;
+  const label = id.includes('250') ? '250ml' : '100ml';
+  document.getElementById('jusPopupSubtitle').textContent = `Pilih satu rasa per porsi · ${label}`;
+  document.getElementById('jusCustomInput').value = '';
+  document.getElementById('jusPopup').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeJusPopup(){
+  document.getElementById('jusPopup').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function confirmJus(rasa){
+  _addJusVariant(rasa);
+}
+
+function confirmJusCustom(){
+  const val = document.getElementById('jusCustomInput').value.trim();
+  if(!val){ showToast('⚠️ Ketik rasa jus terlebih dahulu'); return; }
+  _addJusVariant(val);
+}
+
+function _addJusVariant(rasa){
+  closeJusPopup();
+  if(!cart.jusVariants) cart.jusVariants = {};
+  if(!cart.jusVariants[_jusPendingId]) cart.jusVariants[_jusPendingId] = {};
+  cart.jusVariants[_jusPendingId][rasa] = (cart.jusVariants[_jusPendingId][rasa] || 0) + 1;
+  changeAddon(_jusPendingId, _jusPendingPrice, 1);
+  showToast(`➕ Jus ${rasa} ditambahkan!`);
 }
 
 function updateQtyDisplay(id, price){
@@ -1779,29 +2010,85 @@ function handleOrangMode(){
 }
 
 function renderCartAddonSummary(){
-  const el=document.getElementById('cartAddonSummary');
-  const calcSummary=document.getElementById('cartCalcSummary');
-  const totalRow=document.getElementById('cartTotalRow');
-  const totalAmt=document.getElementById('cartTotalAmt');
-  const items=Object.entries(cart.addons);
-  const totals=calculateOrderTotals();
-  if(el) el.innerHTML=(items.length?`<div style="font-size:.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Add-on Tambahan</div>
-    <div class="cart-addon-list">`+items.map(([id,a])=>`
-    <div class="cart-addon-item">
-      <span class="ca-name">${id}</span>
-      <div class="ca-qty-ctrl">
-        <button class="mini-qty-btn minus-btn" onclick="changeAddon('${id}',${a.price},-1)">−</button>
-        <span style="min-width:20px;text-align:center;font-weight:700">${a.qty}</span>
-        <button class="mini-qty-btn" onclick="changeAddon('${id}',${a.price},1)">+</button>
-        <span class="ca-price">Rp ${(a.price*a.qty).toLocaleString('id-ID')}</span>
-      </div>
-    </div>`).join('')+`</div>`:'');
-  if(calcSummary){
-    calcSummary.style.display='block';
-    calcSummary.innerHTML=`Paket x Orang: <strong style="color:var(--espresso)">Rp ${totals.paketSubtotal.toLocaleString('id-ID')}</strong><br>Total Add-on: <strong style="color:var(--espresso)">Rp ${totals.addonTotal.toLocaleString('id-ID')}</strong>`;
+  const el          = document.getElementById('cartAddonSummary');
+  const calcSummary = document.getElementById('cartCalcSummary');
+  const totalRow    = document.getElementById('cartTotalRow');
+  const totalAmt    = document.getElementById('cartTotalAmt');
+  const items       = Object.entries(cart.addons);
+  const totals      = calculateOrderTotals();
+
+  if(el){
+    if(!items.length){
+      el.innerHTML = '';
+    } else {
+      const rows = items.map(([id, a]) => {
+
+        // Bangun pill varian
+        let variantTags = '';
+
+        if(id === 'Sambal' && cart.sambalVariants && Object.keys(cart.sambalVariants).length){
+          variantTags = Object.entries(cart.sambalVariants).map(([v, q]) =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+              background:${v==='Sambal Merah'?'#fff0f0':'#f0fff4'};
+              border:1px solid ${v==='Sambal Merah'?'#f87171':'#6ee7b7'};
+              color:${v==='Sambal Merah'?'#dc2626':'#059669'};
+              border-radius:100px;font-size:.7rem;font-weight:700;white-space:nowrap">
+              ${v==='Sambal Merah'?'🔴':'🟢'} ${v} ×${q}
+            </span>`
+          ).join('');
+        }
+
+        if((id==='Jus Freshence 250ml'||id==='Jus Freshence 100ml')
+            && cart.jusVariants && cart.jusVariants[id]
+            && Object.keys(cart.jusVariants[id]).length){
+          variantTags = Object.entries(cart.jusVariants[id]).map(([v, q]) =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+              background:#fff8e1;border:1px solid #fcd34d;color:#b45309;
+              border-radius:100px;font-size:.7rem;font-weight:700;white-space:nowrap">
+              🥤 ${v} ×${q}
+            </span>`
+          ).join('');
+        }
+
+        const displayName = id==='Jus Freshence 250ml' ? 'Jus Segar 250ml'
+                          : id==='Jus Freshence 100ml' ? 'Jus Segar 100ml'
+                          : id;
+
+        // Tombol + buka popup yang sesuai
+        const plusAction = id==='Sambal'              ? `openSambalPopup(1)`
+                         : id==='Jus Freshence 250ml' ? `openJusPopup('${id}',${a.price})`
+                         : id==='Jus Freshence 100ml' ? `openJusPopup('${id}',${a.price})`
+                         : `changeAddon('${id}',${a.price},1)`;
+
+        return `
+        <div class="cart-addon-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:10px 12px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="ca-name">${displayName}</span>
+            <div class="ca-qty-ctrl">
+              <button class="mini-qty-btn minus-btn" onclick="changeAddon('${id}',${a.price},-1)">−</button>
+              <span style="min-width:20px;text-align:center;font-weight:700">${a.qty}</span>
+              <button class="mini-qty-btn" onclick="${plusAction}">+</button>
+              <span class="ca-price">Rp ${(a.price*a.qty).toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+          ${variantTags ? `<div style="display:flex;flex-wrap:wrap;gap:4px;padding-top:2px">${variantTags}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      el.innerHTML = `
+        <div style="font-size:.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;
+          text-transform:uppercase;letter-spacing:.06em">Add-on Tambahan</div>
+        <div class="cart-addon-list">${rows}</div>`;
+    }
   }
-  if(totalRow) totalRow.style.display='flex';
-  if(totalAmt) totalAmt.textContent='Rp '+totals.grandTotal.toLocaleString('id-ID');
+
+  if(calcSummary){
+    calcSummary.style.display = 'block';
+    calcSummary.innerHTML = `Paket x Orang: <strong style="color:var(--espresso)">Rp ${totals.paketSubtotal.toLocaleString('id-ID')}</strong><br>
+      Total Add-on: <strong style="color:var(--espresso)">Rp ${totals.addonTotal.toLocaleString('id-ID')}</strong>`;
+  }
+  if(totalRow) totalRow.style.display = 'flex';
+  if(totalAmt) totalAmt.textContent   = 'Rp ' + totals.grandTotal.toLocaleString('id-ID');
 }
 
 // ── ROUTING ──
@@ -1827,6 +2114,11 @@ window.addEventListener('load',()=>{
     if(!node) return;
     node.addEventListener('change',()=>{if(id==='cfOrang')handleOrangMode();renderCartAddonSummary();});
     if(id==='cfOrangCustom') node.addEventListener('input',renderCartAddonSummary);
+  });
+  // Hapus error saat user mulai mengetik
+  ['cfNama','cfWA','cfAlamat'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', () => clearFieldError(id));
   });
 });
 
@@ -1877,37 +2169,129 @@ function selectPaket(val){
   showToast('✅ Paket dipilih! Lengkapi form pesanan.');
 }
 
-// ── SUBMIT ──
+// ── SUBMIT DENGAN VALIDASI LENGKAP ──
 function submitOrder(){
-  const nama=document.getElementById('cfNama').value.trim();
-  const wa=document.getElementById('cfWA').value.trim();
-  const alamat=document.getElementById('cfAlamat').value.trim();
-  const paket=document.getElementById('cfPaket').value;
-  const sesi=document.getElementById('cfSesi').value;
-  const orang=getOrangText();
-  const kemasan=document.getElementById('cfKemasan').value;
-  const tanggal=document.getElementById('cfTanggal').value;
-  const catatan=document.getElementById('cfCatatan').value.trim();
-  const askDiscount=document.getElementById('cfAskDiscount')?.checked;
-  if(!nama||!wa||!alamat||!paket||!tanggal){alert('⚠️ Mohon lengkapi semua data termasuk alamat');return;}
-  if(document.getElementById('cfOrang').value==='6+'&&getOrangCount()<6){alert('⚠️ Minimal 6 orang untuk pilihan 6+');return;}
-  const dateStr=new Date(tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-  const totals=calculateOrderTotals();
-  const addonItems=Object.entries(cart.addons);
-  let addonText='';
-  if(addonItems.length) addonText='\nAdd-on:\n'+addonItems.map(([id,a])=>`- ${id} x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}`).join('\n');
-  const discountText=askDiscount?'\nMohon info promo/diskon jika tersedia.':'';
-  const catatanText=catatan?`\nCatatan: ${catatan}`:'';
-  let mapsLink='-';
-  if(window.userLat&&window.userLng) mapsLink=`https://www.google.com/maps?q=${window.userLat},${window.userLng}`;
-  else if(alamat) mapsLink=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(alamat)}`;
-  const msg=`*Halo Daily Catering Jogja*\n\nSaya ingin melakukan pemesanan:\n\n*DATA*\nNama: ${nama}\nWA: ${wa}\n\n*PESANAN*\nPaket: ${paket}\nSesi: ${sesi}\nJumlah: ${orang} pax\nKemasan: ${kemasan}\nTanggal: ${dateStr}${addonText}\n\n*TOTAL*\nPaket: Rp ${totals.paketSubtotal.toLocaleString('id-ID')}\nAdd-on: Rp ${totals.addonTotal.toLocaleString('id-ID')}\nTotal: Rp ${totals.grandTotal.toLocaleString('id-ID')}${discountText}${catatanText}\n\n*ALAMAT PENGIRIMAN*\n${alamat}\n\n*Lokasi Peta:* ${mapsLink}\n\nMohon konfirmasi ketersediaan dan informasi pembayaran. Terima kasih!`;
-  let phone=WA_NUMBER.replace(/\D/g,'');
-  if(phone.startsWith('0')) phone='62'+phone.slice(1);
-  if(!phone.startsWith('62')) phone='62'+phone;
+  let hasError = false;
+
+  // Bersihkan semua error dulu
+  ['cfNama','cfWA','cfAlamat','cfPaket','cfTanggal'].forEach(id => clearFieldError(id));
+  clearLocError();
+
+  const nama    = document.getElementById('cfNama').value.trim();
+  const wa      = document.getElementById('cfWA').value.trim();
+  const alamat  = document.getElementById('cfAlamat').value.trim();
+  const paket   = document.getElementById('cfPaket').value;
+  const tanggal = document.getElementById('cfTanggal').value;
+
+  // Validasi field teks
+  if(!nama){
+    setFieldError('cfNama', '⚠️ Nama wajib diisi');
+    hasError = true;
+  }
+  if(!wa){
+    setFieldError('cfWA', '⚠️ Nomor WhatsApp wajib diisi');
+    hasError = true;
+  }
+  if(!paket){
+    setFieldError('cfPaket', '⚠️ Paket wajib dipilih');
+    hasError = true;
+  }
+  if(!tanggal){
+    setFieldError('cfTanggal', '⚠️ Tanggal mulai wajib diisi');
+    hasError = true;
+  }
+  if(!alamat){
+    setFieldError('cfAlamat', '⚠️ Alamat wajib diisi');
+    hasError = true;
+  }
+
+  // Validasi lokasi peta — WAJIB
+  if(!window.userLat || !window.userLng){
+    setLocError('⚠️ Lokasi di peta wajib dipilih — klik tombol di atas');
+    document.getElementById('btnPickLoc').classList.add('field-error');
+    hasError = true;
+  } else {
+    document.getElementById('btnPickLoc').classList.remove('field-error');
+  }
+
+  // Validasi jumlah orang custom
+  if(document.getElementById('cfOrang').value === '6+' && getOrangCount() < 6){
+    setFieldError('cfOrangCustom', '⚠️ Minimal 6 orang untuk pilihan 6+');
+    hasError = true;
+  }
+
+  if(hasError){
+    // Scroll ke error pertama
+    const firstError = document.querySelector('.field-error, .loc-error-msg');
+    if(firstError) firstError.scrollIntoView({behavior:'smooth', block:'center'});
+    showToast('⚠️ Lengkapi semua data yang wajib diisi');
+    return;
+  }
+
+  // Semua valid — lanjut kirim
+  const sesi        = document.getElementById('cfSesi').value;
+  const orang       = getOrangText();
+  const kemasan     = document.getElementById('cfKemasan').value;
+  const catatan     = document.getElementById('cfCatatan').value.trim();
+  const askDiscount = document.getElementById('cfAskDiscount')?.checked;
+  const dateStr     = new Date(tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const totals      = calculateOrderTotals();
+  const addonItems  = Object.entries(cart.addons);
+
+  let addonText = '';
+  if(addonItems.length){
+    addonText = '\n\n*ADD-ON:*\n' + addonItems.map(([id, a]) => {
+
+      // Sambal dengan varian
+      if(id === 'Sambal' && cart.sambalVariants && Object.keys(cart.sambalVariants).length){
+        const varianLine = Object.entries(cart.sambalVariants)
+          .map(([v, q]) => `${v} x${q}`).join(', ');
+        return `🌶️ *Sambal Extra* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}\n    › ${varianLine}`;
+      }
+
+      // Jus 100ml dengan varian
+      if(id === 'Jus Freshence 100ml' && cart.jusVariants && cart.jusVariants[id]
+          && Object.keys(cart.jusVariants[id]).length){
+        const varianLine = Object.entries(cart.jusVariants[id])
+          .map(([v, q]) => `${v} x${q}`).join(', ');
+        return `🧃 *Jus Segar 100ml* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}\n    › ${varianLine}`;
+      }
+
+      // Jus 250ml dengan varian
+      if(id === 'Jus Freshence 250ml' && cart.jusVariants && cart.jusVariants[id]
+          && Object.keys(cart.jusVariants[id]).length){
+        const varianLine = Object.entries(cart.jusVariants[id])
+          .map(([v, q]) => `${v} x${q}`).join(', ');
+        return `🥤 *Jus Segar 250ml* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}\n    › ${varianLine}`;
+      }
+
+      // Item biasa (tanpa varian)
+      const emoji = id==='Karbo'  ? '🍚'
+                  : id==='Lauk'   ? '🍗'
+                  : id==='Sayur'  ? '🥬'
+                  : id==='Kerupuk'? '🥔'
+                  : id==='Buah'   ? '🍉' : '➕';
+      return `${emoji} *${id}* x${a.qty} = Rp ${(a.price*a.qty).toLocaleString('id-ID')}`;
+
+    }).join('\n');
+  }
+  const discountText = askDiscount ? '\nMohon info promo/diskon jika tersedia.' : '';
+  const catatanText  = catatan ? `\nCatatan: ${catatan}` : '';
+
+  const mapsLink = `https://www.google.com/maps?q=${window.userLat},${window.userLng}`;
+
+  const msg = `*Halo Daily Catering Jogja*\n\nSaya ingin melakukan pemesanan:\n\n*DATA*\nNama: ${nama}\nWA: ${wa}\n\n*PESANAN*\nPaket: ${paket}\nSesi: ${sesi}\nJumlah: ${orang} pax\nKemasan: ${kemasan}\nTanggal: ${dateStr}${addonText}\n\n*TOTAL*\nPaket: Rp ${totals.paketSubtotal.toLocaleString('id-ID')}\nAdd-on: Rp ${totals.addonTotal.toLocaleString('id-ID')}\nTotal: Rp ${totals.grandTotal.toLocaleString('id-ID')}${discountText}${catatanText}\n\n*ALAMAT PENGIRIMAN*\n${alamat}\n\n*Lokasi Peta:* ${mapsLink}\n\nMohon konfirmasi ketersediaan dan informasi pembayaran. Terima kasih!`;
+
+  let phone = WA_NUMBER.replace(/\D/g,'');
+  if(phone.startsWith('0')) phone = '62'+phone.slice(1);
+  if(!phone.startsWith('62')) phone = '62'+phone;
+
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+
   closeCart();
-  cart.addons={};
+  cart.addons = {};
+  cart.sambalVariants = {};
+  cart.jusVariants    = {};
   updateCartBadge();
   renderCartAddonSummary();
   renderAddonCards();
