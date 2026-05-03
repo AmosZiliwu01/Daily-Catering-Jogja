@@ -246,13 +246,13 @@ h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;line-height:1.15}
 .gallery-modal-overlay.open{display:flex}
 .gallery-modal-box{background:var(--white);border-radius:24px;overflow:hidden;max-width:560px;width:100%;animation:fadeUp .35s ease;position:relative}
 .gallery-modal-img{height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.gallery-modal-emoji{font-size:8rem;z-index:1;animation:floatY 3s ease-in-out infinite;filter:drop-shadow(0 8px 24px rgba(0,0,0,.3))}
+.gallery-modal-emoji{font-size:8rem;position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:1;animation:floatY 3s ease-in-out infinite;filter:drop-shadow(0 8px 24px rgba(0,0,0,.3))}
 .gallery-floats{position:absolute;inset:0;pointer-events:none;z-index:2}
 @keyframes gfloat{0%,100%{transform:translate(0,0) rotate(0deg) scale(1)}33%{transform:translate(6px,-10px) rotate(10deg) scale(1.1)}66%{transform:translate(-6px,4px) rotate(-8deg) scale(.95)}}
 .gfloat{position:absolute;font-size:1.8rem;animation:gfloat 2.5s ease-in-out infinite}
 .gfloat:nth-child(1){top:16px;left:16px}
 .gfloat:nth-child(2){top:16px;right:16px}
-.gfloat:nth-child(3){bottom:16px;left:50%;transform:translateX(-50%)}
+.gfloat:nth-child(3){display:none}
 .gallery-modal-body{padding:24px 28px 28px}
 .gallery-modal-cat{font-size:.72rem;font-weight:700;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
 .gallery-modal-name{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--espresso);margin-bottom:10px}
@@ -503,6 +503,7 @@ footer{background:var(--espresso);color:rgba(255,255,255,.7);padding:60px 5% 30p
   .section{padding:60px 5%}
   .gallery-grid{grid-template-columns:repeat(2,1fr)}
   .gallery-modal-img{height:220px}
+  .gallery-modal-emoji{font-size:4rem;bottom:8px}
   .gallery-nav-btn{top:90px}
   .cart-fab{left:auto;right:12px;bottom:16px;padding:10px 14px;gap:8px;font-size:.8rem}
   .cart-fab svg{width:16px;height:16px}
@@ -2435,10 +2436,10 @@ const foodGallery = [
   { emoji:'🥗', name:'Paket Diet Sehat',        cat:'Diet',       desc:'Nasi merah, protein lean rebus, sayur segar rebus. Rendah kalori, tetap nikmat.',              img:'https://i.pinimg.com/736x/32/7d/e5/327de50b97138d35c4f323f60006f82e.jpg',    floats:['🥦','💚','✅'] },
   { emoji:'🍱', name:'Fampack Keluarga',        cat:'Fampack',    desc:'Satu box besar berisi nasi + 2 lauk + 2 sayur untuk dinikmati bersama keluarga.',             img:'https://i.pinimg.com/1200x/8f/53/bf/8f53bf58d1d2935bf50381bd20189413.jpg',   floats:['👨‍👩‍👧‍👦','❤️','🏠'] },
   { emoji:'🌱', name:'Freshealthy Premium',     cat:'Freshealthy',desc:'Nasi merah organik + protein pilihan + sayur organik segar. Plus bonus jus Freshence!',        img:'https://i.pinimg.com/736x/0f/55/71/0f5571d580344330254a967c2c734033.jpg',    floats:['🌿','⭐','🥤'] },
-  { emoji:'🥙', name:'Funhealthy Seimbang',     cat:'Funhealthy', desc:'Menu sehat yang tetap lezat. Ayam bumbu rempah + sayur tumis + buah potong segar.',           img:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80',   floats:['🏃','💪','🍎'] },
-  { emoji:'🍜', name:'Funsize Hemat',           cat:'Funsize',    desc:'Porsi pas, harga ramah di kantong. Lauk + nasi + sayur dalam kemasan praktis.',               img:'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&q=80',      floats:['😄','💛','👍'] },
-  { emoji:'🐔', name:'Ayam Bakar Kecap',        cat:'Menu Andalan',desc:'Ayam bakar empuk dengan bumbu kecap manis khas Jogja, disajikan dengan lalapan segar.',      img:'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80',   floats:['🔥','😍','🤤'] },
-  { emoji:'🥬', name:'Paket Diet Salmon',       cat:'Freshealthy',desc:'Ikan salmon kukus dengan salad sayur organik segar. Tinggi omega-3 & protein.',               img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80',      floats:['🐟','💚','🌟'] },
+  { emoji:'🥙', name:'Funhealthy Seimbang',     cat:'Funhealthy', desc:'Menu sehat yang tetap lezat. Ayam bumbu rempah + sayur tumis + buah potong segar.',           img:'https://i.pinimg.com/1200x/d4/53/7e/d4537edf964ee656dc8af7ef973c9774.jpg',   floats:['🏃','💪','🍎'] },
+  { emoji:'🍜', name:'Funsize Hemat',           cat:'Funsize',    desc:'Porsi pas, harga ramah di kantong. Lauk + nasi + sayur dalam kemasan praktis.',               img:'https://i.pinimg.com/736x/00/5a/17/005a17bbe1818da98c827734aa66122d.jpg',      floats:['😄','💛','👍'] },
+  { emoji:'🍗', name:'Ayam Bakar Kecap',        cat:'Menu Andalan',desc:'Ayam bakar empuk dengan bumbu kecap manis khas Jogja, disajikan dengan lalapan segar.',      img:'https://i.pinimg.com/736x/1b/22/f7/1b22f747a43fae48b510b059d558ac81.jpg',   floats:['🔥','😍','🤤'] },
+  { emoji:'🥬', name:'Paket Diet Salmon',       cat:'Freshealthy',desc:'Ikan salmon kukus dengan salad sayur organik segar. Tinggi omega-3 & protein.',               img:'https://i.pinimg.com/736x/f1/dd/08/f1dd0871786921a2ee1f41b496ac8cb8.jpg',      floats:['🐟','💚','🌟'] },
 ];
 
 let currentGalleryIdx = 0;
