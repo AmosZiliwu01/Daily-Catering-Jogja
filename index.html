@@ -2237,9 +2237,69 @@ function renderCartAddonSummary() {
 }
 
 // ═══ ORDER TOTALS ═════════════════════════════════════════════════
+const PAKET_PRICES = {
+  // Reguler
+  'Reguler 1 — 6x makan Rp 82.500':       { normal: 82500,   disposable: 87500,   reusable: 77500 },
+  'Reguler 2 — 12x makan Rp 165.000':      { normal: 165000,  disposable: 175000,  reusable: 155000 },
+  '2 Minggu Reguler 1 — Rp 162.000':       { normal: 162000,  disposable: 172000,  reusable: null },
+  '2 Minggu Reguler 2 — Rp 320.000':       { normal: 320000,  disposable: 338000,  reusable: null },
+  '1 Bulan Reguler 1 — Rp 320.000':        { normal: 320000,  disposable: 536000,  reusable: null },
+  '1 Bulan Reguler 2 — Rp 535.000':        { normal: 535000,  disposable: 675000,  reusable: null },
+  'Harian Reguler 1x — Rp 16.000':         { normal: 16000,   disposable: 16000,   reusable: 16000 },
+  'Harian Reguler 2x — Rp 30.500':         { normal: 30500,   disposable: 30500,   reusable: 30500 },
+  // Funsize
+  'Funsize 1 — 6x makan Rp 67.500':        { normal: 67500,   disposable: 72500,   reusable: 62500 },
+  'Funsize 2 — 12x makan Rp 130.000':      { normal: 130000,  disposable: 140000,  reusable: 120000 },
+  '1 Bulan Funsize 1 — Rp 258.000':        { normal: 258000,  disposable: 278000,  reusable: null },
+  '1 Bulan Funsize 2 — Rp 508.000':        { normal: 508000,  disposable: 548000,  reusable: null },
+  'Harian Funsize 1x — Rp 14.750':         { normal: 14750,   disposable: 14750,   reusable: 14750 },
+  'Harian Funsize 2x — Rp 29.000':         { normal: 29000,   disposable: 29000,   reusable: 29000 },
+  // Bigsize
+  'Bigsize 1 — 6x makan Rp 112.500':       { normal: 112500,  disposable: 117500,  reusable: 107500 },
+  'Bigsize 2 — 12x makan Rp 220.000':      { normal: 220000,  disposable: 230000,  reusable: 210000 },
+  '1 Bulan Bigsize 1 — Rp 438.000':        { normal: 438000,  disposable: 872000,  reusable: null },
+  '1 Bulan Bigsize 2 — Rp 872.000':        { normal: 872000,  disposable: 912000,  reusable: null },
+  'Harian Bigsize 1x — Rp 24.000':         { normal: 24000,   disposable: 24000,   reusable: 24000 },
+  'Harian Bigsize 2x — Rp 47.500':         { normal: 47500,   disposable: 47500,   reusable: 47500 },
+  // Fampack
+  'Fampack 1 — 6x makan Rp 77.500':        { normal: 77500,   disposable: 82500,   reusable: 72500 },
+  'Fampack 2 — 12x makan Rp 152.000':      { normal: 152000,  disposable: 160000,  reusable: 144000 },
+  '1 Bulan Fampack 1 — Rp 302.000':        { normal: 302000,  disposable: 592000,  reusable: null },
+  '1 Bulan Fampack 2 — Rp 592.000':        { normal: 592000,  disposable: 632000,  reusable: null },
+  'Harian Fampack 1x — Rp 17.000':         { normal: 17000,   disposable: 17000,   reusable: 17000 },
+  'Harian Fampack 2x — Rp 33.500':         { normal: 33500,   disposable: 33500,   reusable: 33500 },
+  // Diet
+  'Diet 1 — 2x makan Rp 72.500':           { normal: 72500,   disposable: 77500,   reusable: 67500 },
+  'Diet 2 — 12x makan Rp 140.000':         { normal: 140000,  disposable: 150000,  reusable: 130000 },
+  '1 Bulan Diet 1 — Rp 278.000':           { normal: 278000,  disposable: 298000,  reusable: null },
+  '1 Bulan Diet 2 — Rp 548.000':           { normal: 548000,  disposable: 588000,  reusable: null },
+  'Harian Diet 1x — Rp 16.000':            { normal: 16000,   disposable: 16000,   reusable: 16000 },
+  'Harian Diet 2x — Rp 31.500':            { normal: 31500,   disposable: 31500,   reusable: 31500 },
+  // Funhealthy
+  'Funhealthy 1 — 6x makan Rp 97.500':     { normal: 97500,   disposable: 102500,  reusable: 92500 },
+  'Funhealthy 2 — 12x makan Rp 190.000':   { normal: 190000,  disposable: 200000,  reusable: 180000 },
+  '1 Bulan Funhealthy 1 — Rp 378.000':     { normal: 378000,  disposable: 398000,  reusable: null },
+  '1 Bulan Funhealthy 2 — Rp 748.000':     { normal: 748000,  disposable: 788000,  reusable: null },
+  'Harian Funhealthy 1x — Rp 21.500':      { normal: 21500,   disposable: 21500,   reusable: 21500 },
+  'Harian Funhealthy 2x — Rp 41.000':      { normal: 41000,   disposable: 41000,   reusable: 41000 },
+  // Freshealthy
+  'Freshealthy 1 — 2x makan Rp 135.000':   { normal: 135000,  disposable: 160000,  reusable: 125000 },
+  'Freshealthy 2 — 10x makan Rp 265.000':  { normal: 265000,  disposable: 275000,  reusable: 255000 },
+  '1 Bulan Freshealthy 1 — Rp 528.000':    { normal: 528000,  disposable: 548000,  reusable: null },
+  '1 Bulan Freshealthy 2 — Rp 1.048.000':  { normal: 1048000, disposable: 1088000, reusable: null },
+  'Harian Freshealthy 1x — Rp 28.500':     { normal: 28500,   disposable: 28500,   reusable: 28500 },
+  'Harian Freshealthy 2x — Rp 56.000':     { normal: 56000,   disposable: 56000,   reusable: 56000 },
+};
 function parsePriceFromPaketText(txt) {
   const m = (txt || '').match(/Rp\s*([\d.]+)/i);
   return m ? Number(m[1].replace(/\./g, '')) || 0 : 0;
+}
+function getPriceForKemasan(paketText, kemasan) {
+  const prices = PAKET_PRICES[paketText];
+  if (!prices) return parsePriceFromPaketText(paketText);
+  if (kemasan === 'Disposable Box') return prices.disposable;
+  if (kemasan === 'Reusable Box') return prices.reusable !== null ? prices.reusable : prices.normal;
+  return prices.normal;
 }
 function getOrangCount() {
   const sel    = document.getElementById('cfOrang');
@@ -2257,7 +2317,9 @@ function getOrangText() {
   return cnt >= 6 ? `${cnt} orang` : '6+ orang';
 }
 function calculateOrderTotals() {
-  const paketPrice    = parsePriceFromPaketText(document.getElementById('cfPaket')?.value || '');
+  const paketText     = document.getElementById('cfPaket')?.value || '';
+  const kemasan       = document.getElementById('cfKemasan')?.value || '';
+  const paketPrice    = getPriceForKemasan(paketText, kemasan);
   const orangCount    = getOrangCount();
   const addonTotal    = Object.values(cart.addons).reduce((s, a) => s + a.price * a.qty, 0);
   const paketSubtotal = paketPrice * (orangCount || 0);
@@ -2491,7 +2553,7 @@ window.addEventListener('load', () => {
   renderAddonCards();
   handleOrangMode();
 
-  ['cfPaket', 'cfOrang', 'cfOrangCustom'].forEach(id => {
+  ['cfPaket', 'cfOrang', 'cfOrangCustom', 'cfKemasan'].forEach(id => {
     const node = document.getElementById(id);
     if (!node) return;
     node.addEventListener('change', () => { if (id === 'cfOrang') handleOrangMode(); renderCartAddonSummary(); });
